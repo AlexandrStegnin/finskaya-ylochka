@@ -335,7 +335,7 @@
     </dependencies>
 
     <build>
-        <finalName>Potoki</finalName>
+        <finalName>finskaya-ylochka</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
