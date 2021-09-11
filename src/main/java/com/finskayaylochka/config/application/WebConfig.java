@@ -105,9 +105,4 @@ public class WebConfig extends WebMvcConfigurerAdapter {
     return new JdbcTemplateLockProvider(dataSource, "investments.shedlock");
   }
 
-  @Bean
-  public ObjectMapper objectMapper() {
-    return new ObjectMapper();
-  }
-
 }
