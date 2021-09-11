@@ -11,8 +11,8 @@
     <link rel="manifest" href="<c:url value='/resources/core/img/favicon/site.webmanifest?v=lkv88RWlAB' />">
     <link rel="mask-icon" href="<c:url value='/resources/core/img/favicon/safari-pinned-tab.svg?v=lkv88RWlAB' />" color="#4f004b">
     <link rel="shortcut icon" href="<c:url value='/resources/core/img/favicon/favicon.ico?v=lkv88RWlAB' />">
-    <meta name="apple-mobile-web-app-title" content="Колесникъ">
-    <meta name="application-name" content="Колесникъ">
+    <meta name="apple-mobile-web-app-title" content="Финская Улочка">
+    <meta name="application-name" content="Финская Улочка">
     <meta name="msapplication-TileColor" content="#da532c">
     <meta name="theme-color" content="#ffffff">
     <title>Страница входа</title>

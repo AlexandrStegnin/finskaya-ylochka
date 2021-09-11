@@ -14,7 +14,7 @@
         <c:set var="disabled" scope="page" value="disabled"/>
     </sec:authorize>
     <a href="#" class="navbar-brand">
-        <img src="<c:url value='/resources/core/img/logo.png' />" height="56" alt="ДД Колесникъ">
+        <img src="<c:url value='/resources/core/img/logo.png' />" height="56" alt="Финская улочка">
     </a>
     <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
         <span class="navbar-toggler-icon"></span>
