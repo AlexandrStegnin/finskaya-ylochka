@@ -33,8 +33,8 @@ public class PersistenceConfig {
     public DataSource dataSource() throws ClassNotFoundException {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
 
-        Class.forName(env.getProperty("jdbc.driverClassName"));
-        dataSource.setDriverClassName(env.getProperty("jdbc.driverClassName"));
+        Class<?> clazz = Class.forName(env.getProperty("jdbc.driverClassName"));
+        dataSource.setDriverClassName(clazz.getName());
         dataSource.setUrl(env.getProperty("jdbc.url"));
         dataSource.setUsername(env.getProperty("jdbc.username"));
         dataSource.setPassword(env.getProperty("jdbc.password"));
@@ -86,8 +86,7 @@ public class PersistenceConfig {
     private Properties additionalProperties() {
         Properties properties = new Properties();
         properties.setProperty("hibernate.hbm2ddl.auto", "create-update");
-//        properties.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQL5Dialect");
-//        properties.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQL10Dialect");
+        properties.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
         properties.setProperty("hibernate.show_sql", "true");
         properties.setProperty("hibernate.connection.useUnicode", "true");
         properties.setProperty("hibernate.connection.charSet", "UTF-8");
