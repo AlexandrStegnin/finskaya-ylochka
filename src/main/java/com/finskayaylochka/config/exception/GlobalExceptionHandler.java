@@ -14,10 +14,10 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(ApiException.class)
-    protected ResponseEntity<Object> handleApiException(ApiException ex, WebRequest request) {
-        String bodyOfResponse = ex.getMessage();
-        return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(), ex.getStatus(), request);
-    }
+  @ExceptionHandler(ApiException.class)
+  protected ResponseEntity<Object> handleApiException(ApiException ex, WebRequest request) {
+    String bodyOfResponse = ex.getMessage();
+    return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(), ex.getStatus(), request);
+  }
 
 }

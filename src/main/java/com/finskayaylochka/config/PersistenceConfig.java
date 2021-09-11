@@ -26,72 +26,72 @@ import java.util.Properties;
 @PropertySource("classpath:application.properties")
 public class PersistenceConfig {
 
-    @Autowired
-    private Environment env;
+  @Autowired
+  private Environment env;
 
-    @Bean
-    public DataSource dataSource() throws ClassNotFoundException {
-        DriverManagerDataSource dataSource = new DriverManagerDataSource();
+  @Bean
+  public DataSource dataSource() throws ClassNotFoundException {
+    DriverManagerDataSource dataSource = new DriverManagerDataSource();
 
-        Class<?> clazz = Class.forName(env.getProperty("jdbc.driverClassName"));
-        dataSource.setDriverClassName(clazz.getName());
-        dataSource.setUrl(env.getProperty("jdbc.url"));
-        dataSource.setUsername(env.getProperty("jdbc.username"));
-        dataSource.setPassword(env.getProperty("jdbc.password"));
+    Class<?> clazz = Class.forName(env.getProperty("jdbc.driverClassName"));
+    dataSource.setDriverClassName(clazz.getName());
+    dataSource.setUrl(env.getProperty("jdbc.url"));
+    dataSource.setUsername(env.getProperty("jdbc.username"));
+    dataSource.setPassword(env.getProperty("jdbc.password"));
 //        dataSource.setCatalog(env.getProperty("jdbc.catalog"));
-        return dataSource;
-    }
+    return dataSource;
+  }
 
-    @Bean
-    @Qualifier("schedulerLockDataSource")
-    public DataSource schedulerLockDataSource() throws ClassNotFoundException {
-        DriverManagerDataSource dataSource = new DriverManagerDataSource();
+  @Bean
+  @Qualifier("schedulerLockDataSource")
+  public DataSource schedulerLockDataSource() throws ClassNotFoundException {
+    DriverManagerDataSource dataSource = new DriverManagerDataSource();
 
-        Class.forName(env.getProperty("jdbc.driverClassName"));
-        dataSource.setDriverClassName(env.getProperty("jdbc.driverClassName"));
-        dataSource.setUrl(env.getProperty("jdbc.url"));
-        dataSource.setUsername(env.getProperty("jdbc.username"));
-        dataSource.setPassword(env.getProperty("jdbc.password"));
-        dataSource.setCatalog(env.getProperty("jdbc.catalog"));
-        return dataSource;
-    }
+    Class.forName(env.getProperty("jdbc.driverClassName"));
+    dataSource.setDriverClassName(env.getProperty("jdbc.driverClassName"));
+    dataSource.setUrl(env.getProperty("jdbc.url"));
+    dataSource.setUsername(env.getProperty("jdbc.username"));
+    dataSource.setPassword(env.getProperty("jdbc.password"));
+    dataSource.setCatalog(env.getProperty("jdbc.catalog"));
+    return dataSource;
+  }
 
-    @Bean
-    public LocalContainerEntityManagerFactoryBean entityManagerFactory() throws ClassNotFoundException {
-        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
-        em.setDataSource(dataSource());
-        em.setPackagesToScan("com.finskayaylochka.model");
-        em.setPersistenceUnitName("persistenceUnit");
-        JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-        em.setJpaVendorAdapter(vendorAdapter);
-        em.setJpaProperties(additionalProperties());
+  @Bean
+  public LocalContainerEntityManagerFactoryBean entityManagerFactory() throws ClassNotFoundException {
+    LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
+    em.setDataSource(dataSource());
+    em.setPackagesToScan("com.finskayaylochka.model");
+    em.setPersistenceUnitName("persistenceUnit");
+    JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+    em.setJpaVendorAdapter(vendorAdapter);
+    em.setJpaProperties(additionalProperties());
 
-        return em;
-    }
+    return em;
+  }
 
 
-    @Bean
-    public PlatformTransactionManager transactionManager(EntityManagerFactory emf) {
-        JpaTransactionManager transactionManager = new JpaTransactionManager();
-        transactionManager.setEntityManagerFactory(emf);
+  @Bean
+  public PlatformTransactionManager transactionManager(EntityManagerFactory emf) {
+    JpaTransactionManager transactionManager = new JpaTransactionManager();
+    transactionManager.setEntityManagerFactory(emf);
 
-        return transactionManager;
-    }
+    return transactionManager;
+  }
 
-    @Bean
-    public PersistenceExceptionTranslationPostProcessor exceptionTranslation() {
-        return new PersistenceExceptionTranslationPostProcessor();
-    }
+  @Bean
+  public PersistenceExceptionTranslationPostProcessor exceptionTranslation() {
+    return new PersistenceExceptionTranslationPostProcessor();
+  }
 
-    private Properties additionalProperties() {
-        Properties properties = new Properties();
-        properties.setProperty("hibernate.hbm2ddl.auto", "create-update");
-        properties.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
-        properties.setProperty("hibernate.show_sql", "true");
-        properties.setProperty("hibernate.connection.useUnicode", "true");
-        properties.setProperty("hibernate.connection.charSet", "UTF-8");
-        properties.setProperty("connection.characterEncoding", "UTF-8");
+  private Properties additionalProperties() {
+    Properties properties = new Properties();
+    properties.setProperty("hibernate.hbm2ddl.auto", "create-update");
+    properties.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
+    properties.setProperty("hibernate.show_sql", "true");
+    properties.setProperty("hibernate.connection.useUnicode", "true");
+    properties.setProperty("hibernate.connection.charSet", "UTF-8");
+    properties.setProperty("connection.characterEncoding", "UTF-8");
 
-        return properties;
-    }
+    return properties;
+  }
 }

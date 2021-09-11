@@ -40,74 +40,74 @@ import java.util.concurrent.TimeUnit;
 @EnableSchedulerLock(defaultLockAtMostFor = "PT30S")
 public class WebConfig extends WebMvcConfigurerAdapter {
 
-    @Bean(name = "multipartResolver")
-    public StandardServletMultipartResolver resolver() {
-        return new StandardServletMultipartResolver();
-    }
+  @Bean(name = "multipartResolver")
+  public StandardServletMultipartResolver resolver() {
+    return new StandardServletMultipartResolver();
+  }
 
-    @Override
-    public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
-        configurer.enable();
-    }
+  @Override
+  public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
+    configurer.enable();
+  }
 
-    public MappingJackson2HttpMessageConverter jacksonMessageConverter() {
-        MappingJackson2HttpMessageConverter messageConverter = new MappingJackson2HttpMessageConverter();
+  public MappingJackson2HttpMessageConverter jacksonMessageConverter() {
+    MappingJackson2HttpMessageConverter messageConverter = new MappingJackson2HttpMessageConverter();
 
-        ObjectMapper mapper = new ObjectMapper();
-        //Registering Hibernate4Module to support lazy objects
-        mapper.registerModule(new Hibernate4Module());
+    ObjectMapper mapper = new ObjectMapper();
+    //Registering Hibernate4Module to support lazy objects
+    mapper.registerModule(new Hibernate4Module());
 
-        messageConverter.setObjectMapper(mapper);
-        return messageConverter;
+    messageConverter.setObjectMapper(mapper);
+    return messageConverter;
 
-    }
+  }
 
-    @Override
-    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-        //Here we add our custom-configured HttpMessageConverter
-        converters.add(jacksonMessageConverter());
-        super.configureMessageConverters(converters);
-    }
+  @Override
+  public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+    //Here we add our custom-configured HttpMessageConverter
+    converters.add(jacksonMessageConverter());
+    super.configureMessageConverters(converters);
+  }
 
-    @Bean
-    public InternalResourceViewResolver viewResolver() {
-        InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
-        viewResolver.setViewClass(JstlView.class);
-        viewResolver.setPrefix("/WEB-INF/views/");
-        viewResolver.setSuffix(".jsp");
-        return viewResolver;
-    }
+  @Bean
+  public InternalResourceViewResolver viewResolver() {
+    InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
+    viewResolver.setViewClass(JstlView.class);
+    viewResolver.setPrefix("/WEB-INF/views/");
+    viewResolver.setSuffix(".jsp");
+    return viewResolver;
+  }
 
-    @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/resources/**").addResourceLocations("/resources/");
-    }
+  @Override
+  public void addResourceHandlers(ResourceHandlerRegistry registry) {
+    registry.addResourceHandler("/resources/**").addResourceLocations("/resources/");
+  }
 
-    @Bean("investmentsCacheManager")
-    public CacheManager cacheManager() {
-        return new ConcurrentMapCacheManager() {
-            @Override
-            protected Cache createConcurrentMapCache(String name) {
-                return new ConcurrentMapCache(
-                        name,
-                        CacheBuilder.newBuilder()
-                                .expireAfterWrite(30, TimeUnit.MINUTES)
-                                .maximumSize(500)
-                                .build().asMap(),
-                        true);
-            }
-        };
-    }
+  @Bean("investmentsCacheManager")
+  public CacheManager cacheManager() {
+    return new ConcurrentMapCacheManager() {
+      @Override
+      protected Cache createConcurrentMapCache(String name) {
+        return new ConcurrentMapCache(
+            name,
+            CacheBuilder.newBuilder()
+                .expireAfterWrite(30, TimeUnit.MINUTES)
+                .maximumSize(500)
+                .build().asMap(),
+            true);
+      }
+    };
+  }
 
-    @Bean
-    public LockProvider lockProvider(@Qualifier("schedulerLockDataSource")
-                                             DataSource dataSource) {
-        return new JdbcTemplateLockProvider(dataSource, "investments.shedlock");
-    }
+  @Bean
+  public LockProvider lockProvider(@Qualifier("schedulerLockDataSource")
+                                       DataSource dataSource) {
+    return new JdbcTemplateLockProvider(dataSource, "investments.shedlock");
+  }
 
-    @Bean
-    public ObjectMapper objectMapper() {
-        return new ObjectMapper();
-    }
+  @Bean
+  public ObjectMapper objectMapper() {
+    return new ObjectMapper();
+  }
 
 }
