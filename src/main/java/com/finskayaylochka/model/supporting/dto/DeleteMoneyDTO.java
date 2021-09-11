@@ -1,0 +1,19 @@
+package com.finskayaylochka.model.supporting.dto;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * @author Alexandr Stegnin
+ */
+
+@Data
+@EqualsAndHashCode(callSuper = true)
+public class DeleteMoneyDTO extends MoneyDTO {
+
+    private List<Long> moneyIds = new ArrayList<>();
+
+}

@@ -1,0 +1,30 @@
+package com.finskayaylochka.converter;
+
+import com.finskayaylochka.model.Room;
+import com.finskayaylochka.service.RoomService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.stereotype.Component;
+
+@Component
+public class RoomConverter implements Converter<String, Room> {
+
+    private final RoomService roomService;
+
+    @Autowired
+    public RoomConverter(RoomService roomService) {
+        this.roomService = roomService;
+    }
+
+    public Room convert(String id) {
+        Room room;
+        try {
+            Long IntId = Long.valueOf(id);
+            room = roomService.findById(IntId);
+        } catch (Exception ex) {
+            room = roomService.findByRoom(id);
+        }
+
+        return room;
+    }
+}

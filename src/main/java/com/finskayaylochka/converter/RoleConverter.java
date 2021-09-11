@@ -1,0 +1,25 @@
+package com.finskayaylochka.converter;
+
+import com.finskayaylochka.model.AppRole;
+import com.finskayaylochka.service.RoleService;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.stereotype.Component;
+
+/**
+ * A converter class used in views toDate map id's toDate actual userProfile objects.
+ */
+
+@Component
+public class RoleConverter implements Converter<String, AppRole> {
+
+    private final RoleService roleService;
+
+    public RoleConverter(RoleService roleService) {
+        this.roleService = roleService;
+    }
+
+    public AppRole convert(String id) {
+        Long IntId = Long.valueOf(id);
+        return roleService.findById(IntId);
+    }
+}

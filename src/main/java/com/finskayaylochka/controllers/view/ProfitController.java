@@ -1,0 +1,53 @@
+package com.finskayaylochka.controllers.view;
+
+import com.finskayaylochka.model.supporting.view.CompanyInvestorProfit;
+import com.finskayaylochka.model.supporting.view.CompanyProfit;
+import com.finskayaylochka.model.supporting.view.InvestorProfit;
+import com.finskayaylochka.service.view.CompanyProfitService;
+import com.finskayaylochka.service.view.InvestorProfitService;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * @author Alexandr Stegnin
+ */
+
+@RestController
+public class ProfitController {
+
+    private final CompanyProfitService companyProfitService;
+
+    private final InvestorProfitService investorProfitService;
+
+    public ProfitController(CompanyProfitService companyProfitService,
+                            InvestorProfitService investorProfitService) {
+        this.companyProfitService = companyProfitService;
+        this.investorProfitService = investorProfitService;
+    }
+
+    @PostMapping(path = "/union-profit")
+    public List<CompanyInvestorProfit> findByLogin(@RequestBody(required = false) String login) {
+        List<CompanyInvestorProfit> profitUnions = new ArrayList<>();
+        List<CompanyProfit> companyProfits = companyProfitService.findAll();
+        List<InvestorProfit> investorProfits = investorProfitService.findByLogin(login);
+        companyProfits.forEach(companyProfit -> {
+            CompanyInvestorProfit union = new CompanyInvestorProfit();
+            union.setYearSale(companyProfit.getYearSale());
+            union.setProfit(companyProfit.getProfit());
+            profitUnions.add(union);
+        });
+        profitUnions.forEach(profitUnion -> investorProfits.stream()
+                .filter(investorProfit -> investorProfit.getYearSale() == profitUnion.getYearSale())
+                .findFirst()
+                .ifPresent(profit -> {
+                    profitUnion.setLogin(profit.getLogin());
+                    profitUnion.setInvestorProfit(profit.getProfit());
+                }));
+        return profitUnions;
+    }
+
+}
