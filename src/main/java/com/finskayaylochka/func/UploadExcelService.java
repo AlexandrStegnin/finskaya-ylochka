@@ -360,7 +360,7 @@ public class UploadExcelService {
                 HttpStatus.PRECONDITION_FAILED.value());
           }
 
-          String strCashInUnderFacility = row.getCell(6).getStringCellValue();
+          String strCashInUnderFacility = row.getCell(5).getStringCellValue();
           BigDecimal cashInUnderFacility;
           try {
             cashInUnderFacility = new BigDecimal(strCashInUnderFacility);
