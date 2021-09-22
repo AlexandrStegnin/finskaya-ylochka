@@ -24,6 +24,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -47,10 +48,8 @@ public class UploadExcelService {
   static SimpleDateFormat DDMMYYYY_FORMAT = new SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH);
 
   AppUserService appUserService;
-  RoomService roomService;
   FacilityService facilityService;
   UnderFacilityService underFacilityService;
-  RentPaymentService rentPaymentService;
   SalePaymentService salePaymentService;
   GlobalFunctions globalFunctions;
   AccountService accountService;
@@ -90,140 +89,10 @@ public class UploadExcelService {
     }
     HttpSession session = request.getSession(true);
     session.setMaxInactiveInterval(30 * 60);
-    switch (type) {
-      case RENT:
-        response = uploadRent(sheet);
-        break;
-      case SALE:
-        response = uploadSale(sheet);
-        break;
+    if (type == UploadType.SALE) {
+      response = uploadSale(sheet);
     }
     return response;
-  }
-
-  /**
-   * Загрузить excel файл с данными о выплатах инвесторам по аренде
-   *
-   * @param sheet лист excel файла
-   * @return ответ об успешном/неудачном выполнении
-   */
-  private ApiResponse uploadRent(Sheet sheet) {
-    List<Room> rooms = roomService.findAll();
-    List<AppUser> users = appUserService.findAll();
-    List<RentPayment> rentPaymentTmp = rentPaymentService.findAll();
-    int cel = 0;
-    Map<Long, AccountTransaction> userTransactions = new HashMap<>();
-    for (Row row : sheet) {
-      cel++;
-      if (cel > 1) {
-        if (row.getCell(0) != null && row.getCell(0).getCellTypeEnum() != CellType.BLANK) {
-          Calendar calendar = Calendar.getInstance();
-          try {
-            calendar.setTime(FORMAT.parse(row.getCell(0).getDateCellValue().toString()));
-          } catch (Exception ignored) {
-          }
-
-          java.time.LocalDate cal = calendar.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-
-          try {
-            for (int i = 0; i < row.getLastCellNum(); i++) {
-              row.getCell(i).setCellType(CellType.STRING);
-            }
-          } catch (Exception ignored) {
-          }
-
-          String lastName;
-          lastName = row.getCell(4).getStringCellValue();
-          AppUser user = users.stream().filter(u -> u.getProfile().getLastName().equalsIgnoreCase(lastName))
-              .findFirst()
-              .orElse(null);
-          if (user == null) {
-            return new ApiResponse("Не найден пользователь [" + lastName + "]", HttpStatus.PRECONDITION_FAILED.value());
-          }
-
-          String underFacilityName = row.getCell(2).getStringCellValue();
-          if (underFacilityName == null || underFacilityName.isEmpty()) {
-            return new ApiResponse("Не указан подобъект", HttpStatus.PRECONDITION_FAILED.value());
-          }
-          UnderFacility underFacility = underFacilityService.findByName(underFacilityName);
-          if (underFacility == null) {
-            return new ApiResponse("Не найден подобъект [" + underFacilityName + "]", HttpStatus.PRECONDITION_FAILED.value());
-          }
-          String facilityName = row.getCell(1).getStringCellValue();
-          if (facilityName == null || facilityName.isEmpty()) {
-            return new ApiResponse("Не указан объект", HttpStatus.PRECONDITION_FAILED.value());
-          }
-          Facility facility = facilityService.findByName(facilityName);
-          if (facility == null) {
-            return new ApiResponse("Не найден объект [" + facilityName + "]", HttpStatus.PRECONDITION_FAILED.value());
-          }
-          RentPayment rentPayment = new RentPayment();
-          rentPayment.setDateReport(Date.from(cal.atStartOfDay(ZoneId.systemDefault()).toInstant()));
-          rentPayment.setFacility(facility);
-          rentPayment.setUnderFacility(underFacility);
-          rentPayment.setRoom(rooms.stream()
-              .filter(r -> r.getName().equalsIgnoreCase(row.getCell(3).getStringCellValue()))
-              .findFirst().orElse(null));
-
-          rentPayment.setInvestor(user);
-          rentPayment.setShareType(row.getCell(5).getStringCellValue());
-          rentPayment.setGivenCash(Float.parseFloat(row.getCell(6).getStringCellValue()));
-          rentPayment.setSumInUnderFacility(Float.parseFloat(row.getCell(7).getStringCellValue()));
-          rentPayment.setShareForSvod(Float.parseFloat(row.getCell(8).getStringCellValue()));
-
-          rentPayment.setShare(Float.parseFloat(row.getCell(9).getStringCellValue()));
-          rentPayment.setTaxation(Float.parseFloat(row.getCell(10).getStringCellValue()));
-          rentPayment.setCashing(Float.parseFloat(row.getCell(11).getStringCellValue()));
-          rentPayment.setSumma(Float.parseFloat(row.getCell(13).getStringCellValue()));
-          rentPayment.setOnInvestor(Float.parseFloat(row.getCell(14).getStringCellValue()));
-          rentPayment.setAfterTax(Float.parseFloat(row.getCell(15).getStringCellValue()));
-          rentPayment.setAfterDeductionEmptyFacility(Float.parseFloat(row.getCell(16).getStringCellValue()));
-          rentPayment.setAfterCashing(Float.parseFloat(row.getCell(17).getStringCellValue()));
-
-          rentPayment.setReInvest(row.getCell(18).getStringCellValue());
-
-          Facility reFacility = null;
-          String reFacilityName = row.getCell(19).getStringCellValue();
-          if (reFacilityName != null && !reFacilityName.isEmpty()) {
-            reFacility = facilityService.findByName(reFacilityName);
-          }
-
-          rentPayment.setReFacility(reFacility);
-
-          List<RentPayment> flowsList = rentPaymentTmp.stream()
-              .filter(flows -> (flows.getDateReport() != null && rentPayment.getDateReport() != null) &&
-                  globalFunctions.getMonthInt(flows.getDateReport()) ==
-                      globalFunctions.getMonthInt(rentPayment.getDateReport()) &&
-                  globalFunctions.getYearInt(flows.getDateReport()) ==
-                      globalFunctions.getYearInt(rentPayment.getDateReport()) &&
-                  globalFunctions.getDayInt(flows.getDateReport()) ==
-                      globalFunctions.getDayInt(rentPayment.getDateReport()))
-
-              .filter(flows -> !Objects.equals(flows.getFacility(), null) &&
-                  flows.getFacility().getId().equals(rentPayment.getFacility().getId()))
-
-              .filter(flows -> !Objects.equals(rentPayment.getUnderFacility(), null) &&
-                  flows.getUnderFacility().getId().equals(rentPayment.getUnderFacility().getId()))
-
-              .filter(flows -> flows.getInvestor().getId().equals(rentPayment.getInvestor().getId()))
-
-              .collect(Collectors.toList());
-
-          if (flowsList.size() == 0) {
-            rentPayment.setIsReinvest(1);
-            AccountTransaction transaction = userTransactions.get(user.getId());
-            if (transaction == null) {
-              transaction = createRentTransaction(user, rentPayment);
-            } else {
-              transaction = updateRentTransaction(transaction, rentPayment);
-            }
-            userTransactions.put(user.getId(), transaction);
-            rentPaymentService.create(rentPayment);
-          }
-        }
-      }
-    }
-    return new ApiResponse("Загрузка файла с данными по аренде завершена");
   }
 
   /**
@@ -372,7 +241,7 @@ public class UploadExcelService {
           String strProfitToReinvest = row.getCell(6).getStringCellValue();
           BigDecimal profitToReinvest;
           try {
-            profitToReinvest = new BigDecimal(strProfitToReinvest);
+            profitToReinvest = new BigDecimal(strProfitToReinvest).setScale(2, RoundingMode.HALF_UP);
           } catch (NumberFormatException ex) {
             return new ApiResponse(String.format("Ошибка преобразования суммы \"Сколько прибыли реинвест\". Строка %d, столбец 7", cel),
                 HttpStatus.PRECONDITION_FAILED.value());
@@ -541,26 +410,6 @@ public class UploadExcelService {
   }
 
   /**
-   * Создать транзакцию по выплате (аренда)
-   *
-   * @param investor    инвестор
-   * @param rentPayment сумма аренды
-   */
-  private AccountTransaction createRentTransaction(AppUser investor, RentPayment rentPayment) {
-    Account owner = getAccount(investor.getId(), OwnerType.INVESTOR);
-    Account payer = getAccount(rentPayment.getFacility().getId(), OwnerType.FACILITY);
-    AccountTransaction transaction = new AccountTransaction(owner);
-    transaction.setPayer(payer);
-    transaction.setRecipient(owner);
-    transaction.setOperationType(OperationType.DEBIT);
-    transaction.setCashType(CashType.RENT_CASH);
-    transaction.setCash(BigDecimal.valueOf(rentPayment.getAfterCashing()));
-    accountTransactionService.create(transaction);
-    rentPayment.setAccTxId(transaction.getId());
-    return transaction;
-  }
-
-  /**
    * Создать транзакцию по деньгам инвесторов
    *
    * @param money сумма инвестора
@@ -588,18 +437,6 @@ public class UploadExcelService {
   private AccountTransaction updateSaleTransaction(AccountTransaction transaction, SalePayment salePayment) {
     BigDecimal newCash = transaction.getCash().add(salePayment.getProfitToReInvest());
     salePayment.setAccTxId(transaction.getId());
-    return accountTransactionService.updateCash(transaction, newCash);
-  }
-
-  /**
-   * Обновить транзакцию
-   *
-   * @param transaction транзакция
-   * @param rentPayment выплата (аренда)
-   */
-  private AccountTransaction updateRentTransaction(AccountTransaction transaction, RentPayment rentPayment) {
-    BigDecimal newCash = transaction.getCash().add(BigDecimal.valueOf(rentPayment.getAfterCashing()));
-    rentPayment.setAccTxId(transaction.getId());
     return accountTransactionService.updateCash(transaction, newCash);
   }
 
