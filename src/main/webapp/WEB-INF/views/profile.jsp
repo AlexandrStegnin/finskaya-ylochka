@@ -60,13 +60,6 @@
                 </form:form>
             </sec:authorize>
         </sec:authorize>
-        <sec:authorize access="isFullyAuthenticated()">
-            <sec:authorize access="hasRole('ADMIN')">
-                <button type="button" class="btn btn-warning btn-md pull-right" id="send-email" style="margin-left: 5px">
-                    <c:out value="Отправить пригласительный email"/>
-                </button>
-            </sec:authorize>
-        </sec:authorize>
         <button type="button" class="btn btn-warning btn-md pull-right" id="clearLS" style="margin-left: 5px">
             <c:out value="Очистить local storage"/>
         </button>

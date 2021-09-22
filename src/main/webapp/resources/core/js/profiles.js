@@ -43,7 +43,6 @@ jQuery(document).ready(function ($) {
     onDisposeOfFundsClick()
     subscribeTxShowClick()
     subscribeSendEmail()
-    onSendButtonClick()
 });
 
 /**
@@ -200,15 +199,6 @@ function subscribeSendEmail() {
     })
 }
 
-function onSendButtonClick() {
-    $('#send').on('click', function () {
-        if (checkInvestor()) {
-            let userId = sendEmailForm.find('#user option:selected').val()
-            sendEmail(userId)
-        }
-    })
-}
-
 function checkInvestor() {
     let userId = sendEmailForm.find('#user option:selected').val()
     let investorError = sendEmailForm.find('#investorError')
@@ -219,42 +209,4 @@ function checkInvestor() {
         investorError.addClass('d-none')
     }
     return true
-}
-
-/**
- * Отправка email
- * @param userId {Number} id пользователя
- */
-function sendEmail(userId) {
-    let token = $("meta[name='_csrf']").attr("content");
-    let header = $("meta[name='_csrf_header']").attr("content");
-    showLoader()
-    let userDTO = {
-        id: userId
-    }
-    let emailDTO = {
-        user: userDTO
-    }
-    sendEmailForm.modal('hide')
-    $.ajax({
-        type: "POST",
-        contentType: "application/json;charset=utf-8",
-        url: '/send/welcome',
-        data: JSON.stringify(emailDTO),
-        dataType: 'json',
-        timeout: 100000,
-        beforeSend: function (xhr) {
-            xhr.setRequestHeader(header, token);
-        }})
-        .done(function (data) {
-            closeLoader()
-            showPopup(data.message)
-        })
-        .fail(function (jqXHR) {
-            $('#content').addClass('bg-warning')
-            showPopup(jqXHR.responseText);
-        })
-        .always(function () {
-            closeLoader()
-        });
 }

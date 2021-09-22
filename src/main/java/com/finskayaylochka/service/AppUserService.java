@@ -1,23 +1,22 @@
 package com.finskayaylochka.service;
 
-import com.finskayaylochka.config.AppSecurityConfig;
 import com.finskayaylochka.config.SecurityUtils;
 import com.finskayaylochka.config.exception.EntityNotFoundException;
-import com.finskayaylochka.func.PersonalMailService;
 import com.finskayaylochka.model.AppUser;
 import com.finskayaylochka.model.AppUser_;
 import com.finskayaylochka.model.UserProfile;
 import com.finskayaylochka.model.UserProfile_;
 import com.finskayaylochka.model.supporting.ApiResponse;
-import com.finskayaylochka.model.supporting.SendingMail;
-import com.finskayaylochka.model.supporting.dto.EmailDTO;
 import com.finskayaylochka.model.supporting.dto.UserDTO;
 import com.finskayaylochka.model.supporting.enums.KinEnum;
 import com.finskayaylochka.model.supporting.enums.UserRole;
 import com.finskayaylochka.model.supporting.filters.AppUserFilter;
-import com.finskayaylochka.repository.MarketingTreeRepository;
 import com.finskayaylochka.repository.AppUserRepository;
+import com.finskayaylochka.repository.MarketingTreeRepository;
 import com.finskayaylochka.specifications.AppUserSpecification;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -30,42 +29,28 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.UUID;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class AppUserService {
 
-    private final AppUserRepository appUserRepository;
+    final AppUserRepository appUserRepository;
 
-    private final PasswordEncoder passwordEncoder;
+    final PasswordEncoder passwordEncoder;
 
-    private final PersonalMailService personalMailService;
+    final AccountService accountService;
 
-    private final AccountService accountService;
+    final MarketingTreeRepository marketingTreeRepository;
 
-    private final MarketingTreeRepository marketingTreeRepository;
-
-    private final AppUserSpecification specification;
+    final AppUserSpecification specification;
 
     @PersistenceContext(name = "persistanceUnit")
-    private EntityManager em;
-
-    public AppUserService(AppUserRepository appUserRepository, PasswordEncoder passwordEncoder, PersonalMailService personalMailService,
-                          AccountService accountService, MarketingTreeRepository marketingTreeRepository,
-                          AppUserSpecification specification) {
-        this.appUserRepository = appUserRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.personalMailService = personalMailService;
-        this.accountService = accountService;
-        this.marketingTreeRepository = marketingTreeRepository;
-        this.specification = specification;
-    }
+    EntityManager em;
 
     //    @Cacheable(Constant.USERS_CACHE_KEY)
     public List<AppUser> findAll() {
@@ -160,9 +145,6 @@ public class AppUserService {
         appUserRepository.save(user);
         if (SecurityUtils.isUserInRole(user, UserRole.ROLE_INVESTOR)) {
             accountService.createAccount(user);
-//            if (account != null) {
-//                sendWelcomeMessage(user, password);
-//            }
         }
         response.setMessage("Пользователь успешно создан");
         return response;
@@ -195,22 +177,6 @@ public class AppUserService {
         return new ApiResponse("Пользователь успешно обновлён");
     }
 
-    private void sendWelcomeMessage(AppUser user, String password) {
-        SendingMail mail = new SendingMail();
-        mail.setSubject("Добро пожаловать в Доходный Дом КолесникЪ!");
-        mail.setBody("Здравствуйте, уважаемый Инвестор!<br/>" +
-                "Вам предоставлен доступ в личный кабинет Доходного Дома &#171;Колесникъ&#187; (https://www.lk.ddkolesnik.com)<br/>" +
-                "Наша видео инструкция поможет сориентироваться (https://youtu.be/nWtQdlP5GDU)<br/>" +
-                "Данные для входа:<br/>" +
-                "login: " + user.getLogin() + "<br/>" +
-                "Пароль: " + password + "<br/>" +
-                "С уважением,<br/>" +
-                "Сергей Колесник.");
-        String who = "ДД Колесникъ";
-        Properties prop = getProp();
-        personalMailService.sendEmails(user, mail, prop.getProperty("mail.kolesnik"), prop.getProperty("mail.kolesnikpwd"), who, null);
-    }
-
     public AppUser findByLoginAndEmail(String login, String email) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<AppUser> usersCriteriaQuery = cb.createQuery(AppUser.class);
@@ -219,19 +185,6 @@ public class AppUserService {
         usersCriteriaQuery.where(cb.and(cb.equal(usersRoot.get(AppUser_.login), login),
                 cb.equal(usersRoot.get(AppUser_.profile).get(UserProfile_.email), email)));
         return em.createQuery(usersCriteriaQuery).getSingleResult();
-    }
-
-    public Properties getProp() {
-        String fileName = "mail.ru.properties";
-        Properties prop = new Properties();
-        InputStream input;
-        try {
-            input = AppSecurityConfig.class.getClassLoader().getResourceAsStream(fileName);
-            prop.load(input);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        return prop;
     }
 
     private String generatePassword() {
@@ -296,20 +249,4 @@ public class AppUserService {
         return appUsers;
     }
 
-    public ApiResponse sendWelcomeMessage(EmailDTO emailDTO) {
-//        if (Objects.isNull(emailDTO)
-//                || Objects.isNull(emailDTO.getUser())
-//                || Objects.isNull(emailDTO.getUser().getId())) {
-//            throw new ApiException("Для отправки email не указан пользователь", HttpStatus.BAD_REQUEST);
-//        }
-//        AppUser user = findById(emailDTO.getUser().getId());
-//        if (Objects.isNull(user)) {
-//            throw new ApiException("Пользователь не найден", HttpStatus.NOT_FOUND);
-//        }
-//        String password = generatePassword();
-//        user.setPassword(passwordEncoder.encode(password));
-//        sendWelcomeMessage(user, password);
-//        userRepository.save(user);
-        return new ApiResponse("Функционал отключён, обратитесь к разработчику");
-    }
 }

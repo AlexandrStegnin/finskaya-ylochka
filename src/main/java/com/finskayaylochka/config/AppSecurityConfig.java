@@ -5,8 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationTrustResolver;
 import org.springframework.security.authentication.AuthenticationTrustResolverImpl;
@@ -26,55 +24,12 @@ import org.springframework.web.filter.CharacterEncodingFilter;
 import javax.annotation.Resource;
 import javax.mail.Authenticator;
 import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 
 @Configuration
 @EnableWebSecurity
 @ComponentScan(basePackages = {"com.finskayaylochka"})
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
-
-  @Bean
-  public JavaMailSender getMailSender() {
-    JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-
-    String fileName = "mail.ru.properties";
-    Properties prop = new Properties();
-    InputStream input;
-    try {
-      input = AppSecurityConfig.class.getClassLoader().getResourceAsStream(fileName);
-      prop.load(input);
-    } catch (IOException ex) {
-      ex.printStackTrace();
-    }
-
-    //Using mail.ru
-    mailSender.setHost(prop.getProperty("mail.host"));
-    mailSender.setPort(Integer.parseInt(prop.getProperty("mail.port")));
-
-    mailSender.setUsername(prop.getProperty("mail.username"));
-    mailSender.setPassword(prop.getProperty("mail.password"));
-    mailSender.setProtocol(prop.getProperty("mail.protocol"));
-
-    Authenticator auth = new MyAuthenticator(mailSender.getUsername(), mailSender.getPassword());
-
-    Properties javaMailProperties = new Properties();
-    javaMailProperties.put("mail.transport.protocol", prop.getProperty("mail.protocol"));
-    javaMailProperties.put("mail.smtp.port", Integer.parseInt(prop.getProperty("mail.port")));
-    javaMailProperties.put("mail.smtp.host", prop.getProperty("mail.host"));
-    javaMailProperties.put("mail.smtp.auth", prop.getProperty("mail.smtp.auth"));
-    javaMailProperties.put("mail.debug", prop.getProperty("mail.debug"));
-    javaMailProperties.put("mail.smtp.starttls.enable", prop.getProperty("mail.smtp.starttls.enable"));
-
-    Session session = Session.getInstance(javaMailProperties, auth);
-
-    mailSender.setJavaMailProperties(javaMailProperties);
-    mailSender.setSession(session);
-    return mailSender;
-  }
 
   @Resource(name = "customUserDetailsService")
   private CustomUserDetailsService customUserDetailsService;

@@ -240,12 +240,6 @@ public class UserController {
         return appUserService.find(dto);
     }
 
-    @ResponseBody
-    @PostMapping(path = Location.SEND_WELCOME)
-    public ApiResponse sendWelcomeMessage(@RequestBody EmailDTO emailDTO) {
-        return appUserService.sendWelcomeMessage(emailDTO);
-    }
-
     @InitBinder
     public void initBinder(WebDataBinder webDataBinder) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
