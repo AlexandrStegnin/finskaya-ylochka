@@ -102,7 +102,7 @@ public class UploadExcelService {
    * @return ответ об успешном/неудачном выполнении
    */
   private ApiResponse uploadSale(Sheet sheet) {
-    if (!ExcelUtils.isCorrect(sheet)) {
+    if (ExcelUtils.isIncorrect(sheet)) {
       return new ApiResponse("Проверьте кол-во столбцов в файле. Должно быть 10", HttpStatus.BAD_REQUEST.value());
     }
     List<AppUser> users = appUserService.getInvestors();

@@ -39,4 +39,8 @@ public class ExcelUtils {
     return colCount == 10;
   }
 
+  public static boolean isIncorrect(Sheet sheet) {
+    return !isCorrect(sheet);
+  }
+
 }
