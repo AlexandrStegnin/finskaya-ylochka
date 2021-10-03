@@ -63,7 +63,7 @@
                         <option
                                 <c:forEach var="filterUnderFacility" items="${cashFilters.underFacilities}">
                                     <c:choose>
-                                        <c:when test="${uf.name eq filterUnderFacility}">selected="selected"</c:when>
+                                        <c:when test="${uf.name eq filterUnderFacility.name}">selected="selected"</c:when>
                                     </c:choose>
                                 </c:forEach>
                                 value="${uf.name}" id="${uf.id}"
