@@ -16,42 +16,42 @@ import java.util.Date;
 @Data
 public class AccountTransactionDTO {
 
-    private Long id;
+  private Long id;
 
-    private Date txDate;
+  private Date txDate;
 
-    private String operationType;
+  private String operationType;
 
-    private String payer;
+  private String payer;
 
-    private String owner;
+  private String owner;
 
-    private String recipient;
+  private String recipient;
 
-    private BigDecimal cash;
+  private BigDecimal cash;
 
-    private String cashType;
+  private String cashType;
 
-    private boolean blocked;
+  private boolean blocked;
 
-    public AccountTransactionDTO(AccountTransaction transaction) {
-        this.id = transaction.getId();
-        this.txDate = transaction.getTxDate();
-        this.operationType = transaction.getOperationType().getTitle();
-        this.payer = getName(transaction.getPayer());
-        this.owner = getName(transaction.getOwner());
-        this.recipient = getName(transaction.getRecipient());
-        this.cashType = transaction.getCashType().getTitle();
-        this.cash = transaction.getCash();
-        this.blocked = transaction.isBlocked();
+  public AccountTransactionDTO(AccountTransaction transaction) {
+    this.id = transaction.getId();
+    this.txDate = transaction.getTxDate();
+    this.operationType = transaction.getOperationType().getTitle();
+    this.payer = getName(transaction.getPayer());
+    this.owner = getName(transaction.getOwner());
+    this.recipient = getName(transaction.getRecipient());
+    this.cashType = transaction.getCashType().getTitle();
+    this.cash = transaction.getCash();
+    this.blocked = transaction.isBlocked();
+  }
+
+  private String getName(Account account) {
+    String name = "";
+    if (account != null) {
+      name = account.getOwnerName();
     }
-
-    private String getName(Account account) {
-        String name = "";
-        if (account != null) {
-            name = account.getOwnerName();
-        }
-        return name;
-    }
+    return name;
+  }
 
 }

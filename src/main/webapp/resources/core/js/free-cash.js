@@ -218,7 +218,11 @@ function getFormatter() {
  */
 function getDate(number) {
     let dateTime = new Date(number)
-    return new Date(dateTime.getUTCFullYear(), dateTime.getUTCMonth(), dateTime.getUTCDate())
+    return new Date(Date.UTC(
+        dateTime.getUTCFullYear(),
+        dateTime.getUTCMonth(),
+        dateTime.getUTCDate(),
+        dateTime.getUTCHours() + new Date().getTimezoneOffset() / -60))
 }
 
 /**

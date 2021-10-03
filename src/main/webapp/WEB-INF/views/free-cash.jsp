@@ -21,9 +21,14 @@
           rel="stylesheet">
     <link rel="shortcut icon" href="<c:url value='/resources/core/img/favicon/favicon.ico?v=eEY755nn99' />">
     <link href="<c:url value='/resources/core/css/ddk_loader.css' />" rel="stylesheet"/>
-    <style type="text/css">
+    <style>
         table, td, th {
             text-align: center;
+        }
+        .has-error {
+            color: red;
+            padding: 8px 0 0 8px;
+            font-size: 12px;
         }
     </style>
 </head>
@@ -83,11 +88,11 @@
                 Сбросить фильтры
             </button>
         </div>
-<%--        <div>--%>
-<%--            <button type="button" id="take-money" class="btn btn-success input-md" style="margin-left: 10px">--%>
-<%--                Вывести деньги--%>
-<%--            </button>--%>
-<%--        </div>--%>
+        <div>
+            <button type="button" id="take-money" class="btn btn-success input-md" style="margin-left: 10px">
+                Вывести деньги
+            </button>
+        </div>
     </div>
     </form:form>
 

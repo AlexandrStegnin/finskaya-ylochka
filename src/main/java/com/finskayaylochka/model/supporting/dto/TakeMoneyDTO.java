@@ -1,10 +1,11 @@
 package com.finskayaylochka.model.supporting.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.util.Date;
 
 /**
  * @author Alexandr Stegnin
@@ -18,7 +19,8 @@ public class TakeMoneyDTO {
 
   Long investorId;
   BigDecimal sum;
-  LocalDate date;
+  @JsonFormat(pattern = "yyyy-MM-dd")
+  Date date;
   BigDecimal commission;
   BigDecimal commissionNoMore;
 
