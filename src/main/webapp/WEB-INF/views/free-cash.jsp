@@ -83,6 +83,11 @@
                 Сбросить фильтры
             </button>
         </div>
+            <div>
+                <button type="button" id="take-money" class="btn btn-success input-md" style="margin-left: 10px">
+                    Вывести деньги
+                </button>
+            </div>
     </div>
     </form:form>
 
@@ -136,6 +141,7 @@
 <%@include file="popup_modal.jsp" %>
 <%@include file="ddk_loader.jsp" %>
 <%@include file="table-popup.jsp" %>
+<%@include file="take-money-form.jsp" %>
 
 <script type="text/javascript"
         src="<c:url value='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js' />"></script>
@@ -148,6 +154,7 @@
 <script src="<c:url value='https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/js/bootstrap4-toggle.min.js' />"></script>
 <script type="text/javascript" src="<c:url value='/resources/core/js/ddk_loader.js' />"></script>
 <script type="text/javascript" src="<c:url value='/resources/core/js/free-cash.js' />"></script>
+<script type="text/javascript" src="<c:url value='/resources/core/js/take-money.js' />"></script>
 
 </body>
 </html>

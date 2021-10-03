@@ -1,16 +1,20 @@
 package com.finskayaylochka.service;
 
+import com.finskayaylochka.model.InvestorCashLog;
+import com.finskayaylochka.model.Money;
+import com.finskayaylochka.model.SalePayment;
+import com.finskayaylochka.model.TransactionLog;
 import com.finskayaylochka.model.supporting.dto.InvestorCashDTO;
 import com.finskayaylochka.model.supporting.dto.TransactionLogDTO;
 import com.finskayaylochka.model.supporting.enums.TransactionType;
+import com.finskayaylochka.model.supporting.filters.TxLogFilter;
 import com.finskayaylochka.repository.MoneyRepository;
-import com.finskayaylochka.repository.RentPaymentRepository;
 import com.finskayaylochka.repository.SalePaymentRepository;
 import com.finskayaylochka.repository.TransactionLogRepository;
 import com.finskayaylochka.specifications.TransactionLogSpecification;
-import com.finskayaylochka.model.*;
-import com.finskayaylochka.model.supporting.filters.TxLogFilter;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,38 +28,16 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class TransactionLogService {
 
-    private final TransactionLogSpecification specification;
-
-    private final TransactionLogRepository transactionLogRepository;
-
-    private final InvestorCashLogService investorCashLogService;
-
-    private final MoneyRepository moneyRepository;
-
-    private final SalePaymentRepository salePaymentRepository;
-
-    private final RentPaymentRepository rentPaymentRepository;
-
-    private final AccountTransactionService accountTransactionService;
-
-    @Autowired
-    public TransactionLogService(TransactionLogSpecification specification,
-                                 TransactionLogRepository transactionLogRepository,
-                                 InvestorCashLogService investorCashLogService,
-                                 MoneyRepository moneyRepository,
-                                 SalePaymentRepository salePaymentRepository,
-                                 RentPaymentRepository rentPaymentRepository,
-                                 AccountTransactionService accountTransactionService) {
-        this.specification = specification;
-        this.transactionLogRepository = transactionLogRepository;
-        this.investorCashLogService = investorCashLogService;
-        this.moneyRepository = moneyRepository;
-        this.salePaymentRepository = salePaymentRepository;
-        this.rentPaymentRepository = rentPaymentRepository;
-        this.accountTransactionService = accountTransactionService;
-    }
+    TransactionLogSpecification specification;
+    TransactionLogRepository transactionLogRepository;
+    InvestorCashLogService investorCashLogService;
+    MoneyRepository moneyRepository;
+    SalePaymentRepository salePaymentRepository;
+    AccountTransactionService accountTransactionService;
 
     /**
      * Создать запись об операции с деньгами
@@ -161,9 +143,6 @@ public class TransactionLogService {
             case REINVESTMENT_SALE:
                 return rollbackReinvestmentSale(log);
 
-            case REINVESTMENT_RENT:
-                return rollbackReinvestmentRent(log);
-
             default:
                 return "Не реализовано: " + log.getType().name();
         }
@@ -241,21 +220,6 @@ public class TransactionLogService {
         log.setRollbackEnabled(true);
         create(log);
         investorCashLogService.reinvestmentSale(salePayments, log);
-    }
-
-    /**
-     * Создать запись категории "Реинвестирование с аренды" в логе
-     *
-     * @param rentPayments список денег с аренды
-     * @param cashList список денег, основанных на деньгах с продажи
-     */
-    public void reinvestmentRent(List<RentPayment> rentPayments, Set<Money> cashList) {
-        TransactionLog log = new TransactionLog();
-        log.setMonies(cashList);
-        log.setType(TransactionType.REINVESTMENT_RENT);
-        log.setRollbackEnabled(true);
-        create(log);
-        investorCashLogService.reinvestmentRent(rentPayments, log);
     }
 
     public void createDivideCashLog(Set<Money> monies) {
@@ -349,29 +313,6 @@ public class TransactionLogService {
             flowsSales.forEach(flowSale -> {
                 flowSale.setIsReinvest(0);
                 salePaymentRepository.saveAndFlush(flowSale);
-            });
-            cashLogs.forEach(investorCashLogService::delete);
-            transactionLogRepository.delete(log);
-            return "Откат операции прошёл успешно";
-        } catch (Exception e) {
-            return String.format("При удалении транзакции произошла ошибка [%s]", e.getLocalizedMessage());
-        }
-    }
-
-    @Transactional
-    public String rollbackReinvestmentRent(TransactionLog log) {
-        Set<Money> cashes = log.getMonies();
-        List<InvestorCashLog> cashLogs = investorCashLogService.findByTxId(log.getId());
-        List<Long> rentPaymentsId = cashLogs
-                .stream()
-                .map(InvestorCashLog::getCashId)
-                .collect(Collectors.toList());
-        List<RentPayment> rentPayments = rentPaymentRepository.findByIdIn(rentPaymentsId);
-        try {
-            moneyRepository.delete(cashes);
-            rentPayments.forEach(rentPayment -> {
-                rentPayment.setIsReinvest(0);
-                rentPaymentRepository.save(rentPayment);
             });
             cashLogs.forEach(investorCashLogService::delete);
             transactionLogRepository.delete(log);

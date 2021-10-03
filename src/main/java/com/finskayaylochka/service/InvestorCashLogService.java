@@ -3,6 +3,9 @@ package com.finskayaylochka.service;
 import com.finskayaylochka.model.supporting.enums.CashType;
 import com.finskayaylochka.repository.InvestorCashLogRepository;
 import com.finskayaylochka.model.*;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,15 +16,12 @@ import java.util.Set;
  *
  * @author Alexandr Stegnin
  */
-
 @Service
+@RequiredArgsConstructor
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class InvestorCashLogService {
 
-    private final InvestorCashLogRepository investorCashLogRepository;
-
-    public InvestorCashLogService(InvestorCashLogRepository investorCashLogRepository) {
-        this.investorCashLogRepository = investorCashLogRepository;
-    }
+    InvestorCashLogRepository investorCashLogRepository;
 
     /**
      * Найти сумму в истории по id
@@ -99,19 +99,6 @@ public class InvestorCashLogService {
     public void reinvestmentSale(List<SalePayment> flowsSales, TransactionLog log) {
         flowsSales.forEach(flowsSale -> {
             InvestorCashLog cashLog = new InvestorCashLog(flowsSale, log, CashType.SALE_CASH);
-            investorCashLogRepository.save(cashLog);
-        });
-    }
-
-    /**
-     * Создать суммы в истории и в логе на основании сумм с аренды
-     *
-     * @param flows суммы с аренды
-     * @param log   лог
-     */
-    public void reinvestmentRent(List<RentPayment> flows, TransactionLog log) {
-        flows.forEach(sum -> {
-            InvestorCashLog cashLog = new InvestorCashLog(sum, log, CashType.RENT_CASH);
             investorCashLogRepository.save(cashLog);
         });
     }

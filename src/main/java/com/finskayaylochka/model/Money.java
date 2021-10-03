@@ -1,7 +1,6 @@
 package com.finskayaylochka.model;
 
 import com.finskayaylochka.model.supporting.dto.CashingMoneyDTO;
-import com.finskayaylochka.model.supporting.dto.RentPaymentDTO;
 import com.finskayaylochka.model.supporting.dto.SalePaymentDTO;
 import com.finskayaylochka.model.supporting.enums.CashType;
 import com.finskayaylochka.model.supporting.enums.MoneyState;
@@ -177,20 +176,6 @@ public class Money implements Cash {
         this.cashSource = cashSource;
         this.newCashDetail = newCashDetail;
         this.shareType = shareType;
-    }
-
-    public Money(RentPayment rentPayment, RentPaymentDTO dto, Facility facility) {
-        this.givenCash = BigDecimal.valueOf(rentPayment.getAfterCashing());
-        this.dateGiven = dto.getDateGiven();
-        this.facility = facility;
-        this.investor = rentPayment.getInvestor();
-        this.shareType = ShareType.fromTitle(dto.getShareType());
-        this.dateReport = rentPayment.getDateReport();
-        this.sourceFacility = rentPayment.getFacility();
-        this.sourceUnderFacility = rentPayment.getUnderFacility();
-        this.sourceFlowsId = String.valueOf(rentPayment.getId());
-        this.room = rentPayment.getRoom();
-        this.state = MoneyState.ACTIVE;
     }
 
     public Money(SalePayment salePayment, SalePaymentDTO dto, Facility facility, UnderFacility underFacility, NewCashDetail newCashDetail) {

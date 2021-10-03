@@ -208,14 +208,6 @@ public class Location {
   // Выплаты инвесторам по аренде/продаже
   public static final String PAYMENTS_URL = "/payments";
 
-  public static final String RENT_PAYMENTS = PAYMENTS_URL + "/rent";
-
-  public static final String RENT_PAYMENTS_UPLOAD = RENT_PAYMENTS + "/upload";
-
-  public static final String RENT_PAYMENTS_REINVEST = RENT_PAYMENTS + "/reinvest";
-
-  public static final String RENT_PAYMENTS_DELETE_CHECKED = RENT_PAYMENTS + "/delete/checked";
-
   public static final String SALE_PAYMENTS = PAYMENTS_URL + "/sale";
 
   public static final String SALE_PAYMENTS_UPLOAD = SALE_PAYMENTS + "/upload";

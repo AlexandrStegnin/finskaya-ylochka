@@ -1,30 +1,22 @@
 package com.finskayaylochka.model.supporting.enums;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+
 /**
  * Вид загружаемого Excel файла
  *
  * @author Alexandr Stegnin
  */
-
+@Getter
+@RequiredArgsConstructor
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public enum UploadType {
 
-    RENT(1, "Выплаты с аренды"),
     SALE(2, "Выплаты с продажи");
 
-    private final int id;
-
-    private final String title;
-
-    UploadType(int id, String title) {
-        this.id = id;
-        this.title = title;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
+    int id;
+    String title;
 }

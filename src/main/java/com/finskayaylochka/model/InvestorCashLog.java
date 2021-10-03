@@ -139,15 +139,4 @@ public class InvestorCashLog {
         this.shareType = flowsSale.getShareType();
     }
 
-    public InvestorCashLog(RentPayment payment, TransactionLog log, CashType instanceOf) {
-        this.cashId = payment.getId();
-        this.investor = payment.getInvestor();
-        this.facility = payment.getFacility();
-        this.dateGivenCash = payment.getDateReport();
-        this.givenCash = BigDecimal.valueOf(payment.getAfterCashing());
-        this.transactionLog = log;
-        this.instanceOf = instanceOf;
-        this.shareType = ShareType.fromTitle(payment.getShareType());
-    }
-
 }

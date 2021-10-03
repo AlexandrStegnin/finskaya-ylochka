@@ -12,7 +12,6 @@ import com.finskayaylochka.model.supporting.enums.ShareType;
 import com.finskayaylochka.model.supporting.filters.AccTxFilter;
 import com.finskayaylochka.repository.AccountTransactionRepository;
 import com.finskayaylochka.repository.MoneyRepository;
-import com.finskayaylochka.repository.RentPaymentRepository;
 import com.finskayaylochka.repository.SalePaymentRepository;
 import com.finskayaylochka.specifications.AccountTransactionSpecification;
 import lombok.AccessLevel;
@@ -49,7 +48,6 @@ public class AccountTransactionService {
   AppUserService appUserService;
   MoneyRepository moneyRepository;
   NewCashDetailService newCashDetailService;
-  RentPaymentRepository rentPaymentRepository;
 
   public AccountTransaction create(AccountTransaction transaction) {
     return accountTransactionRepository.save(transaction);
@@ -201,7 +199,6 @@ public class AccountTransactionService {
         deleteMonies(allTx);
         releaseMonies(allTx);
         deleteSalePayments(allTx);
-        deleteRentPayments(allTx);
         deleteByParent(transaction);
       });
     } catch (Exception e) {
@@ -226,21 +223,6 @@ public class AccountTransactionService {
         salePaymentRepository.delete(salePayments);
       }
     });
-  }
-
-  /**
-   * Удалить связанные выплаты с аренды
-   *
-   * @param transactions список транзакций
-   */
-  private void deleteRentPayments(List<AccountTransaction> transactions) {
-    List<RentPayment> rentPayments = new ArrayList<>();
-    transactions.forEach(tx -> tx.getRentPayments().forEach(rentPayment -> {
-      if (rentPayment != null) {
-        rentPayments.add(rentPayment);
-      }
-    }));
-    rentPaymentRepository.delete(rentPayments);
   }
 
   /**

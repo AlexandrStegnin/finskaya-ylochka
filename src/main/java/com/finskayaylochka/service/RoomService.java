@@ -5,6 +5,9 @@ import com.finskayaylochka.model.supporting.ApiResponse;
 import com.finskayaylochka.model.supporting.dto.RoomDTO;
 import com.finskayaylochka.model.supporting.enums.OwnerType;
 import com.finskayaylochka.repository.RoomRepository;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,23 +19,13 @@ import java.util.Objects;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class RoomService {
 
-    private final RentPaymentService flowsService;
-
-    private final MoneyService cashService;
-
-    private final AccountService accountService;
-
-    private final RoomRepository roomRepository;
-
-    public RoomService(RentPaymentService flowsService, MoneyService cashService,
-                       AccountService accountService, RoomRepository roomRepository) {
-        this.flowsService = flowsService;
-        this.cashService = cashService;
-        this.accountService = accountService;
-        this.roomRepository = roomRepository;
-    }
+    MoneyService cashService;
+    AccountService accountService;
+    RoomRepository roomRepository;
 
 //    @Cacheable(Constant.ROOMS_CACHE_KEY)
     public List<Room> findAll() {
@@ -66,9 +59,6 @@ public class RoomService {
 
 //    @CacheEvict(value = Constant.ROOMS_CACHE_KEY)
     public ApiResponse deleteById(Long id) {
-        List<RentPayment> flows = flowsService.findByRoomId(id);
-        flows.forEach(f -> f.setRoom(null));
-        flowsService.saveList(flows);
         List<Money> cashes = cashService.findByRoomId(id);
         cashes.forEach(c -> {
             c.setRoom(null);
