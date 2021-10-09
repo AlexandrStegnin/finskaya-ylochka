@@ -62,8 +62,13 @@ public class TakeMoneyService {
   }
 
   private BigDecimal getTotalSumToTake(TakeMoneyDTO dto, BalanceDTO balanceDTO) {
-    BigDecimal commissionSum = dto.getSum().multiply(dto.getCommission().divide(BigDecimal.valueOf(100), 2, RoundingMode.CEILING));
-    if (commissionSum.compareTo(dto.getCommissionNoMore()) > 0) {
+    BigDecimal commission = dto.getCommission();
+    if (Objects.isNull(commission)) {
+      commission = BigDecimal.ZERO;
+    }
+    BigDecimal commissionSum = dto.getSum().multiply(commission.divide(BigDecimal.valueOf(100), 2, RoundingMode.CEILING));
+    BigDecimal commissionNoMore = dto.getCommissionNoMore();
+    if (Objects.nonNull(commissionNoMore) && commissionSum.compareTo(dto.getCommissionNoMore()) > 0) {
       commissionSum = dto.getCommissionNoMore();
     }
     BigDecimal totalSumToTake = dto.getSum().add(commissionSum);
