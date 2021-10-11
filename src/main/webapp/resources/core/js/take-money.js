@@ -89,6 +89,7 @@ function takeMoney(takeMoneyDTO) {
         }
     })
         .done(function (data) {
+            takeMoneyForm.modal('hide')
             showPopup(data.message);
             $('#btn-search').click()
         })
