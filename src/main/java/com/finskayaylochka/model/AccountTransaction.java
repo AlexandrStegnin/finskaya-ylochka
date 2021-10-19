@@ -3,6 +3,7 @@ package com.finskayaylochka.model;
 import com.finskayaylochka.model.supporting.enums.CashType;
 import com.finskayaylochka.model.supporting.enums.OperationType;
 import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -20,52 +21,78 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(exclude = {"parent", "child"})
-@EqualsAndHashCode(callSuper = true, exclude = {"parent", "child"})
+@EqualsAndHashCode(exclude = {"parent", "child"})
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(name = "account_transaction")
-public class AccountTransaction extends AbstractEntity {
+public class AccountTransaction {
 
+  @Id
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "account_transaction_generator")
+  @SequenceGenerator(name = "account_transaction_generator", sequenceName = "account_transaction_id_seq")
+  Long id;
+  
   @ManyToOne
   @JoinColumn(name = "parent_acc_tx_id")
-  private AccountTransaction parent;
+  AccountTransaction parent;
 
   @OneToMany(mappedBy = "parent", orphanRemoval = true)
-  private Set<AccountTransaction> child;
+  Set<AccountTransaction> child;
 
   @Column(name = "tx_date")
-  private Date txDate = new Date();
+  Date txDate = new Date();
 
   @Enumerated(EnumType.ORDINAL)
   @Column(name = "operation_type")
-  private OperationType operationType;
+  OperationType operationType;
 
   @ManyToOne
   @JoinColumn(name = "payer_account_id")
-  private Account payer;
+  Account payer;
 
   @OneToOne
   @JoinColumn(name = "owner_account_id")
-  private Account owner;
+  Account owner;
 
   @ManyToOne
   @JoinColumn(name = "recipient_account_id")
-  private Account recipient;
+  Account recipient;
 
   @OneToMany
   @JoinColumn(name = "acc_tx_id", referencedColumnName = "id")
-  private Set<SalePayment> salePayments = new HashSet<>();
+  Set<SalePayment> salePayments = new HashSet<>();
 
   @OneToMany(mappedBy = "transaction")
-  private Set<Money> monies = new HashSet<>();
+  Set<Money> monies = new HashSet<>();
 
   @Enumerated(EnumType.ORDINAL)
   @Column(name = "cash_type_id")
-  private CashType cashType;
+  CashType cashType;
 
   @Column(name = "blocked")
-  private boolean blocked = false;
+  boolean blocked = false;
 
   @Column(name = "cash")
-  private BigDecimal cash;
+  BigDecimal cash;
+
+  @Temporal(TemporalType.TIMESTAMP)
+  @Column(name = "creation_time")
+  Date creationTime;
+
+  @Temporal(TemporalType.TIMESTAMP)
+  @Column(name = "modified_time")
+  Date modifiedTime;
+
+  @PrePersist
+  public void prePersist() {
+    if (this.creationTime == null) {
+      this.creationTime = new Date();
+    }
+  }
+
+  @PreUpdate
+  public void preUpdate() {
+    this.modifiedTime = new Date();
+  }
 
   public AccountTransaction(Account owner) {
     this.owner = owner;

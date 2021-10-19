@@ -1,9 +1,11 @@
 package com.finskayaylochka.model;
 
 import com.finskayaylochka.model.supporting.dto.UnderFacilityDTO;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import lombok.experimental.FieldDefaults;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -13,19 +15,21 @@ import java.util.Set;
 @NoArgsConstructor
 @Table(name = "under_facility")
 @ToString(exclude = {"facility", "rooms"})
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @EqualsAndHashCode(exclude = {"facility", "rooms"})
 public class UnderFacility implements Serializable {
 
-    private Long id;
+    Long id;
 
-    private String name;
+    String name;
 
-    private Facility facility;
+    Facility facility;
 
-    private Set<Room> rooms;
+    Set<Room> rooms;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "under_facility_generator")
+    @SequenceGenerator(name = "under_facility_generator", sequenceName = "under_facility_id_seq")
     public Long getId() {
         return id;
     }

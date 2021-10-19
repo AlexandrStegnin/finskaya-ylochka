@@ -2,8 +2,10 @@ package com.finskayaylochka.model;
 
 import com.finskayaylochka.model.supporting.enums.CashType;
 import com.finskayaylochka.model.supporting.enums.ShareType;
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -16,94 +18,96 @@ import java.util.Date;
 @Data
 @Entity
 @NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(name = "investor_cash_log")
 public class InvestorCashLog {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "investor_cash_log_generator")
+    @SequenceGenerator(name = "investor_cash_log_generator", sequenceName = "investor_cash_log_id_seq")
     @Column(name = "id")
-    private Long id;
+    Long id;
 
     @Column(name = "cash_id")
-    private Long cashId;
+    Long cashId;
 
     @OneToOne
     @JoinColumn(name = "investor_id")
-    private AppUser investor;
+    AppUser investor;
 
     @OneToOne
     @JoinColumn(name = "facility_id")
-    private Facility facility;
+    Facility facility;
 
     @OneToOne
     @JoinColumn(name = "under_facility_id")
-    private UnderFacility underFacility;
+    UnderFacility underFacility;
 
     @Column(name = "given_cash")
-    private BigDecimal givenCash;
+    BigDecimal givenCash;
 
     @Column(name = "date_given_cash")
-    private Date dateGivenCash;
+    Date dateGivenCash;
 
     @OneToOne
     @JoinColumn(name = "cash_source_id")
-    private CashSource cashSource;
+    CashSource cashSource;
 
     @OneToOne
     @JoinColumn(name = "new_cash_detail_id")
-    private NewCashDetail newCashDetail;
+    NewCashDetail newCashDetail;
 
     @Column(name = "date_closing_invest")
-    private Date dateClosingInvest;
+    Date dateClosingInvest;
 
     @OneToOne
     @JoinColumn(name = "type_closing_invest_id")
-    private TypeClosing typeClosing;
+    TypeClosing typeClosing;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "share_type")
-    private ShareType shareType;
+    ShareType shareType;
 
     @Column(name = "date_report")
-    private Date dateReport;
+    Date dateReport;
 
     @OneToOne
     @JoinColumn(name = "source_facility_id")
-    private Facility sourceFacility;
+    Facility sourceFacility;
 
     @OneToOne
     @JoinColumn(name = "source_under_facility_id")
-    private UnderFacility sourceUnderFacility;
+    UnderFacility sourceUnderFacility;
 
     @Column(name = "source_flows_id")
-    private String sourceFlowsId;
+    String sourceFlowsId;
 
     @OneToOne
     @JoinColumn(name = "room_id")
-    private Room room;
+    Room room;
 
     @Column(name = "reinvest")
-    private int reinvest;
+    int reinvest;
 
     @Column(name = "source_id")
-    private Long sourceId;
+    Long sourceId;
 
     @Column(name = "source")
-    private String source;
+    String source;
 
     @Column(name = "divide")
-    private int divide;
+    int divide;
 
     @Column(name = "real_date_given")
-    private Date realDateGiven;
+    Date realDateGiven;
 
     @OneToOne
     @JoinColumn(name = "tx_id")
-    private TransactionLog transactionLog;
+    TransactionLog transactionLog;
 
     @Enumerated
     @Column(name = "instance_of")
-    private CashType instanceOf;
+    CashType instanceOf;
 
     public InvestorCashLog(Money cash, TransactionLog log, CashType instanceOf) {
         this.cashId = cash.getId();

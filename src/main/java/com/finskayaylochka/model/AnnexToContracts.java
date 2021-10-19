@@ -1,28 +1,25 @@
 package com.finskayaylochka.model;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Date;
 
-@Getter
-@Setter
-@ToString
-@EqualsAndHashCode
+@Data
 @Entity
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(name = "AnnexToContracts")
 public class AnnexToContracts implements Serializable {
 
-    private BigInteger id;
-    private String annexName;
+    BigInteger id;
+    String annexName;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "annextocontracts_generator")
+    @SequenceGenerator(name = "annextocontracts_generator", sequenceName = "annextocontracts_id_seq")
     @Column(name = "Id")
     public BigInteger getId() {
         return id;
@@ -38,12 +35,12 @@ public class AnnexToContracts implements Serializable {
     }
 
     @Column(name = "FilePath")
-    private String filePath;
+    String filePath;
 
-    private Date dateLoad;
+    Date dateLoad;
 
     @Column(name = "LoadedBy")
-    private Long loadedBy;
+    Long loadedBy;
 
     @Column(name = "DateLoad")
     public Date getDateLoad() {

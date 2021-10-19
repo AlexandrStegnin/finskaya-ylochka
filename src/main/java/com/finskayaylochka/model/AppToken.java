@@ -1,6 +1,9 @@
 package com.finskayaylochka.model;
 
 import com.finskayaylochka.model.supporting.dto.TokenDTO;
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.experimental.FieldDefaults;
 
 import javax.persistence.*;
 import java.util.UUID;
@@ -9,23 +12,22 @@ import java.util.UUID;
  * @author Alexandr Stegnin
  */
 
+@Data
 @Entity
 @Table(name = "app_token")
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class AppToken {
 
     @Id
-    @TableGenerator(name = "appTokenSeqStore", table = "SEQ_STORE",
-            pkColumnName = "SEQ_NAME", pkColumnValue = "APP.TOKEN.ID.PK",
-            valueColumnName = "SEQ_VALUE", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.TABLE, generator = "appTokenSeqStore")
-    @Column(name = "Id")
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "app_token_generator")
+    @SequenceGenerator(name = "app_token_generator", sequenceName = "app_token_id_seq")
+    Long id;
 
     @Column(name = "app_name")
-    private String appName;
+    String appName;
 
     @Column(name = "token")
-    private String token;
+    String token;
 
     public AppToken() {
         this.token = generateToken();
@@ -40,32 +42,8 @@ public class AppToken {
         }
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getAppName() {
-        return appName;
-    }
-
-    public void setAppName(String appName) {
-        this.appName = appName;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
-    private String generateToken() {
-        return UUID.randomUUID().toString().replaceAll("-", "").substring(0, 16);
+    String generateToken() {
+        return UUID.randomUUID().toString().replace("-", "").substring(0, 16);
     }
 
 }

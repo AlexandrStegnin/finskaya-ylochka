@@ -1,7 +1,9 @@
 package com.finskayaylochka.model;
 
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import lombok.experimental.FieldDefaults;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -9,16 +11,18 @@ import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+@Entity
 @ToString
 @EqualsAndHashCode
-@Entity
 @Table(name = "UsersAnnexToContracts")
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class UsersAnnexToContracts implements Serializable {
 
-    private BigInteger id;
+    BigInteger id;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "usersannextocontracts_generator")
+    @SequenceGenerator(name = "usersannextocontracts_generator", sequenceName = "usersannextocontracts_id_seq")
     public BigInteger getId() {
         return id;
     }
@@ -28,7 +32,7 @@ public class UsersAnnexToContracts implements Serializable {
     }
 
     @Column(name = "UserId")
-    private Long userId;
+    Long userId;
 
     public Long getUserId() {
         return userId;
@@ -39,7 +43,7 @@ public class UsersAnnexToContracts implements Serializable {
     }
 
     @Column(name = "AnnexRead")
-    private int annexRead;
+    int annexRead;
 
     public int getAnnexRead() {
         return annexRead;
@@ -50,7 +54,7 @@ public class UsersAnnexToContracts implements Serializable {
     }
 
     @Column(name = "DateRead")
-    private Date dateRead;
+    Date dateRead;
 
     public Date getDateRead() {
         return dateRead;
@@ -72,7 +76,7 @@ public class UsersAnnexToContracts implements Serializable {
         return localDate;
     }
 
-    private AnnexToContracts annex;
+    AnnexToContracts annex;
 
     @OneToOne(cascade =
             {

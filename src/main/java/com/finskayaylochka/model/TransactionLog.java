@@ -3,7 +3,9 @@ package com.finskayaylochka.model;
 import com.finskayaylochka.model.supporting.enums.TransactionType;
 import com.finskayaylochka.config.SecurityUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -18,36 +20,38 @@ import java.util.Set;
 @Data
 @Entity
 @Table(name = "transaction_log")
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class TransactionLog {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "transaction_log_generator")
+    @SequenceGenerator(name = "transaction_log_generator", sequenceName = "transaction_log_id_seq")
     @Column(name = "id")
-    private Long id;
+    Long id;
 
     @Column(name = "created_by")
-    private String createdBy;
+    String createdBy;
 
     @Column(name = "tx_date")
-    private Date txDate;
+    Date txDate;
 
     @ManyToMany
     @JoinTable(name = "tx_log_inv_cash",
             joinColumns = {@JoinColumn(name = "tx_id", referencedColumnName = "id")},
             inverseJoinColumns = @JoinColumn(name = "cash_id", referencedColumnName = "id"))
-    private Set<Money> monies;
+    Set<Money> monies;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "transaction_type")
-    private TransactionType type;
+    TransactionType type;
 
     @Column(name = "rollback_enabled")
-    private boolean rollbackEnabled;
+    boolean rollbackEnabled;
 
     @OneToOne
     @JsonIgnore
     @JoinColumn(name = "blocked_from")
-    private TransactionLog blockedFrom;
+    TransactionLog blockedFrom;
 
     @PrePersist
     public void prePersist() {

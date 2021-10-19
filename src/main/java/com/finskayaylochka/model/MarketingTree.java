@@ -2,8 +2,10 @@ package com.finskayaylochka.model;
 
 import com.finskayaylochka.model.supporting.enums.KinEnum;
 import com.finskayaylochka.model.supporting.enums.StatusEnum;
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -12,37 +14,39 @@ import java.util.Date;
 @Data
 @Entity
 @NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(name = "marketing_tree")
 public class MarketingTree implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "marketing_tree_generator")
+    @SequenceGenerator(name = "marketing_tree_generator", sequenceName = "marketing_tree_id_seq")
     @Column(name = "id")
-    private Long id;
+    Long id;
 
     @OneToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "partner_id", referencedColumnName = "id")
-    private AppUser partner;
+    AppUser partner;
 
     @OneToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "investor_id", referencedColumnName = "id")
-    private AppUser investor;
+    AppUser investor;
 
     @Column(name = "kin")
     @Enumerated(EnumType.STRING)
-    private KinEnum kin;
+    KinEnum kin;
 
     @Column(name = "first_investment_date")
-    private Date firstInvestmentDate;
+    Date firstInvestmentDate;
 
     @Column(name = "inv_status")
     @Enumerated(EnumType.STRING)
-    private StatusEnum invStatus;
+    StatusEnum invStatus;
 
     @Column(name = "days_to_deactivate")
-    private int daysToDeactivate;
+    int daysToDeactivate;
 
     @Column(name = "ser_number")
-    private int serNumber;
+    int serNumber;
 
 }

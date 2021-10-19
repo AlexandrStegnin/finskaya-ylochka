@@ -19,7 +19,8 @@ import javax.persistence.*;
 public class UserAgreement {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_agreement_generator")
+    @SequenceGenerator(name = "user_agreement_generator", sequenceName = "user_agreement_id_seq")
     Long id;
 
     /**

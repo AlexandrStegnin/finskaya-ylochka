@@ -1,9 +1,11 @@
 package com.finskayaylochka.model;
 
 import com.finskayaylochka.model.supporting.dto.CashSourceDTO;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 import javax.persistence.*;
 
@@ -12,18 +14,19 @@ import javax.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "cash_source")
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class CashSource {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "cash_source_generator")
+    @SequenceGenerator(name = "cash_source_generator", sequenceName = "cash_source_id_seq")
+    Long id;
 
     @Column(name = "name")
-    private String name;
+    String name;
 
     @Column(name = "organization_id")
-    private String organizationId;
+    String organizationId;
 
     public CashSource(CashSourceDTO dto) {
         this.id = dto.getId();

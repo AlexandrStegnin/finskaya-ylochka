@@ -2,6 +2,7 @@ package com.finskayaylochka.model;
 
 import com.finskayaylochka.model.supporting.dto.RoomDTO;
 import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -14,40 +15,42 @@ import java.util.Date;
 @NoArgsConstructor
 @Table(name = "room")
 @ToString(exclude = "underFacility")
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @EqualsAndHashCode(exclude = "underFacility")
 public class Room implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "room_generator")
+    @SequenceGenerator(name = "room_generator", sequenceName = "room_id_seq")
+    Long id;
 
     @Column(name = "name")
-    private String name;
+    String name;
 
     @Column(name = "cost")
-    private BigDecimal cost;
+    BigDecimal cost;
 
     @Column(name = "room_size")
-    private BigDecimal roomSize;
+    BigDecimal roomSize;
 
     @Column(name = "sold")
-    private boolean sold;
+    boolean sold;
 
     @Column(name = "date_sale")
-    private Date dateSale;
+    Date dateSale;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "under_facility_id", referencedColumnName = "id")
-    private UnderFacility underFacility;
+    UnderFacility underFacility;
 
     @Column(name = "date_buy")
-    private Date dateBuy;
+    Date dateBuy;
 
     @Column(name = "sale_price")
-    private BigDecimal salePrice;
+    BigDecimal salePrice;
 
     @Column(name = "total_year_profit")
-    private BigDecimal totalYearProfit;
+    BigDecimal totalYearProfit;
 
     public Room(RoomDTO dto) {
         this.id = dto.getId();

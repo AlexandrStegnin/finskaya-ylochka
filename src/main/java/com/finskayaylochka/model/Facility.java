@@ -1,26 +1,28 @@
 package com.finskayaylochka.model;
 
 import com.finskayaylochka.model.supporting.dto.FacilityDTO;
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 import javax.persistence.*;
 import java.io.Serializable;
 
 @Data
 @Entity
+@NoArgsConstructor
 @Table(name = "facility")
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @EqualsAndHashCode(of = {"id", "name", "fullName"})
 public class Facility implements Serializable {
 
-    private Long id;
+    Long id;
 
-    private String name;
+    String name;
 
-    private String city;
-
-    public Facility() {
-    }
+    String city;
 
     public Facility(String id, String name) {
         this.id = Long.valueOf(id);
@@ -28,7 +30,8 @@ public class Facility implements Serializable {
     }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "facility_generator")
+    @SequenceGenerator(name = "facility_generator", sequenceName = "facility_id_seq")
     @Column(name = "id")
     public Long getId() {
         return id;
@@ -56,7 +59,7 @@ public class Facility implements Serializable {
         this.city = city;
     }
 
-    private String fullName;
+    String fullName;
 
     @Column(name = "full_name")
     public String getFullName() {

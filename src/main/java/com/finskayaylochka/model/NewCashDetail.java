@@ -2,27 +2,26 @@ package com.finskayaylochka.model;
 
 import com.finskayaylochka.model.supporting.dto.NewCashDetailDTO;
 import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import javax.persistence.*;
 import java.io.Serializable;
 
-@ToString
-@EqualsAndHashCode
-@Getter
-@Setter
+@Data
+@Entity
 @NoArgsConstructor
 @AllArgsConstructor
-
-@Entity
 @Table(name = "new_cash_detail")
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class NewCashDetail implements Serializable {
 
-    private Long id;
+    Long id;
 
-    private String name;
+    String name;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "new_cash_detail_generator")
+    @SequenceGenerator(name = "new_cash_detail_generator", sequenceName = "new_cash_detail_id_seq")
     @Column(name = "id")
     public Long getId() {
         return id;

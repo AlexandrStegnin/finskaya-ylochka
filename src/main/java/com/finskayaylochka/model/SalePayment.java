@@ -21,7 +21,8 @@ import java.util.Date;
 public class SalePayment implements Cash {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sale_payment_generator")
+  @SequenceGenerator(name = "sale_payment_generator", sequenceName = "sale_payment_id_seq")
   @Column(name = "id")
   Long id;
 
