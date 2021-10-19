@@ -714,21 +714,6 @@ function disableFields(operation) {
     }
 }
 
-function enableFields() {
-    $('#facilities').prop('disabled', false);
-    $('#underFacilities').prop('disabled', false);
-    $('#investor').prop('disabled', false);
-    $('#cash').prop('disabled', false);
-    $('#dateGivenCash').prop('disabled', false);
-    $('#cashSrc').prop('disabled', false);
-    $('#cashDetail').prop('disabled', false);
-    $('#dateCloseInv').prop('disabled', false);
-    $('#typeClosing').prop('disabled', false);
-    $('#reFacilities').prop('disabled', false);
-    $('#reUnderFacilities').prop('disabled', false);
-    $('#dateRep').prop('disabled', false);
-}
-
 function moveFields(mAttribute) {
 
     let facilities = $('#facilitiesRow');
@@ -898,9 +883,14 @@ function reinvestCash(facilityToReinvestId, underFacilityToReinvestId, shareType
         },
         error: function (e) {
             showPopup('Что-то пошло не так = [' + e.error + "]");
+            closeLoader()
         },
         done: function (e) {
             enableSearchButton(true);
+            closeLoader()
+        },
+        always: function (e) {
+            closeLoader()
         }
     });
 }
@@ -973,13 +963,19 @@ function saveDivideCash(cashes, reUnderFacility, excludedUnderFacilities) {
             xhr.setRequestHeader(header, token);
         },
         success: function (data) {
+            closeLoader()
             showPopup(data.message);
         },
         error: function (e) {
             showPopup('Что-то пошло не так [' + e + ']');
+            closeLoader()
         },
         done: function (e) {
             enableSearchButton(true);
+            closeLoader()
+        },
+        always: function () {
+            closeLoader()
         }
     });
 }
@@ -1004,13 +1000,19 @@ function divideMultiple(cashes, reUnderFacilitiesList, excludedUnderFacilities) 
             xhr.setRequestHeader(header, token);
         },
         success: function (data) {
+            closeLoader()
             showPopup(data.message);
         },
         error: function (e) {
             showPopup('Что-то пошло не так [' + e.error + ']');
+            closeLoader()
         },
         done: function (e) {
             enableSearchButton(true);
+            closeLoader()
+        },
+        always: function () {
+            closeLoader()
         }
     });
 }
@@ -1034,14 +1036,17 @@ function deleteCash(cashIdList) {
         }
     })
         .done(function (data) {
+            closeLoader()
             showPopup(data.message);
         })
         .fail(function (jqXHR) {
+            closeLoader()
             $('#content').addClass('bg-warning')
             showPopup(jqXHR.responseText);
         })
         .always(function () {
             console.log('Закончили!');
+            closeLoader()
         });
 
 }
@@ -1100,7 +1105,11 @@ function closeCash(cashIdList, invBuyer, dateClosingInvest, what, realDateGiven)
             showPopup(data.message);
         },
         error: function (e) {
+            closeLoader()
             showPopup(e.toLocaleString());
+        },
+        always: function () {
+            closeLoader()
         }
     });
 }
@@ -1287,6 +1296,9 @@ function saveMoney(moneyDTO) {
         error: function (e) {
             closeLoader()
             showPopup(e.error);
+        },
+        always: function () {
+            closeLoader()
         }
     });
 }
@@ -1490,6 +1502,9 @@ function acceptMonies(acceptedMoneyDTO) {
         error: function (e) {
             closeLoader()
             showPopup(e.error);
+        },
+        always: function () {
+            closeLoader()
         }
     });
 }
