@@ -152,8 +152,7 @@ function getRoom(roomId) {
             showUpdateRoomForm(data)
         })
         .fail(function (jqXHR) {
-            $('#content').addClass('bg-warning')
-            showPopup(jqXHR.responseText);
+            showPopup(jqXHR.responseJSON, true);
         })
         .always(function () {
             closeLoader()
@@ -314,12 +313,11 @@ function save(roomDTO, action) {
         }})
         .done(function (data) {
             closeLoader();
-            showPopup(data.message);
+            showPopup(data.message, false);
             window.location.href = 'list'
         })
         .fail(function (jqXHR) {
-            $('#content').addClass('bg-warning')
-            showPopup(jqXHR.responseText);
+            showPopup(jqXHR.responseJSON, true);
         })
         .always(function () {
             closeLoader()
@@ -364,25 +362,15 @@ function deleteRoom(roomId) {
         }})
         .done(function (data) {
             closeLoader();
-            showPopup(data.message);
+            showPopup(data.message, false);
             window.location.href = 'list'
         })
         .fail(function (jqXHR) {
-            $('#content').addClass('bg-warning')
-            showPopup(jqXHR.responseText);
+            showPopup(jqXHR.responseJSON, true);
         })
         .always(function () {
             closeLoader()
         })
-}
-
-
-function showPopup(message) {
-    $('#msg').html(message);
-    $('#msg-modal').modal('show');
-    setTimeout(function () {
-        $('#msg-modal').modal('hide');
-    }, 3000);
 }
 
 /**

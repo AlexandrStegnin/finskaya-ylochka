@@ -74,15 +74,13 @@ function create() {
             xhr.setRequestHeader(header, token);
         },
         success: function(data) {
-            showPopup(data.message);
+            showPopup(data.message, false);
             if (data.status === 200) {
                 clearForm();
             }
         },
-        error: function(request, status, error){
-            console.log(request.responseText);
-            console.log(status);
-            console.log(error);
+        error: function(jqXHR){
+            showPopup(jqXHR.responseJSON, true);
         },
         always: function() {
             enableButton(true);
@@ -97,19 +95,6 @@ function createCashSource(cashSourceId) {
     let organizationId = $('#organization-id').val();
     cashSource.build(cashSourceId, name, organizationId);
     return cashSource;
-}
-
-/**
- * Показать сообщение
- *
- * @param message {String}
- */
-function showPopup(message) {
-    $('#msg').html(message);
-    $('#msg-modal').modal('show');
-    setTimeout(function () {
-        $('#msg-modal').modal('hide');
-    }, 3000);
 }
 
 /**
@@ -161,9 +146,9 @@ function getCashSource(cashSourceId) {
         success: function (data) {
             showUpdateCashSourceForm(data)
         },
-        error: function (e) {
+        error: function (jqXHR) {
             closeLoader();
-            showPopup(e.error);
+            showPopup(jqXHR.responseJSON, true);
         }
     });
 }
@@ -276,12 +261,12 @@ function save(cashSourceDTO, action) {
         },
         success: function (data) {
             closeLoader();
-            showPopup(data.message);
+            showPopup(data.message, false);
             window.location.href = 'list'
         },
-        error: function (e) {
+        error: function (jqXHR) {
             closeLoader();
-            showPopup(e.error);
+            showPopup(jqXHR.responseJSON, true);
         }
     });
 }
@@ -338,11 +323,11 @@ function deleteCashSource(cashSourceId) {
             xhr.setRequestHeader(header, token);
         },
         success: function (data) {
-            showPopup(data.message)
+            showPopup(data.message, false)
         },
-        error: function (e) {
+        error: function (jqXHR) {
             closeLoader();
-            showPopup(e.error)
+            showPopup(jqXHR.responseJSON, true)
         }
     });
 }

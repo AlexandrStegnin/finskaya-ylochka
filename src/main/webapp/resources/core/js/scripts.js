@@ -221,10 +221,10 @@ function updateMarketingTree() {
         },
         success: function (data) {
             closeLoader()
-            showPopup(data.message)
+            showPopup(data.message, false)
         },
         error: function (e) {
-            showPopup(e)
+            showPopup(e.responseJSON, true)
             closeLoader()
         },
         always: function () {
@@ -245,9 +245,16 @@ function time(message) {
  * Показать сообщение
  *
  * @param message {String}
+ * @param isWarning {Boolean}
  */
-function showPopup(message) {
+function showPopup(message, isWarning) {
+    closeLoader()
     $('#msg').html(message);
+    if (isWarning) {
+        $('#content').addClass('bg-warning')
+    } else {
+        $('#content').removeClass('bg-warning')
+    }
     $('#msg-modal').modal('show');
     setTimeout(function () {
         $('#msg-modal').modal('hide');

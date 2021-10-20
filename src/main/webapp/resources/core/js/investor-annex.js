@@ -58,14 +58,14 @@ function uploadAnnexes() {
 
     // Called on success of file upload
     ajaxReq.done(function (msg) {
-        showPopup(msg.message);
+        showPopup(msg.message, false);
         $('#file').val('');
         $('#filter-btn').prop('disabled', false).click();
     });
 
     // Called on failure of file upload
     ajaxReq.fail(function (jqXHR) {
-        showPopup(jqXHR.responseText + '(' + jqXHR.status + ' - ' + jqXHR.statusText + ')');
+        showPopup(jqXHR.responseJSON, true);
         $('#filter-btn').prop('disabled', false);
     });
 }
@@ -90,22 +90,14 @@ function deleteAnnexList(annexIdList) {
         },
         success: function (data) {
             closeLoader()
-            showPopup(data.message);
+            showPopup(data.message, false);
             $('#filter-btn').click()
         },
-        error: function (e) {
+        error: function (jqXHR) {
             closeLoader()
-            showPopup('Что-то пошло не так [' + e.error + ']');
+            showPopup(jqXHR.responseJSON, true);
         }
     });
-}
-
-function showPopup(message) {
-    $('#msg').html(message);
-    $('#msg-modal').modal('show');
-    setTimeout(function () {
-        $('#msg-modal').modal('hide');
-    }, 3000);
 }
 
 function toggleTooltip() {

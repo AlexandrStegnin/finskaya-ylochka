@@ -206,27 +206,14 @@ function getOpenedProjects(sellerId) {
             closeLoader();
             fillFacilitiesSelect(data)
         },
-        error: function (e) {
+        error: function (jqXHR) {
             closeLoader()
-            showPopup(e);
+            showPopup(jqXHR.responseJSON, true);
         },
         always: function () {
             closeLoader()
         }
     });
-}
-
-/**
- * Показать сообщение
- *
- * @param message {String}
- */
-function showPopup(message) {
-    $('#msg').html(message);
-    $('#msg-modal').modal('show');
-    setTimeout(function () {
-        $('#msg-modal').modal('hide');
-    }, 3000);
 }
 
 /**
@@ -296,9 +283,9 @@ function getOpenedMonies(projectId, sellerId) {
             closeLoader();
             fillOpenedMoniesSelect(data)
         },
-        error: function (e) {
+        error: function (jqXHR) {
             closeLoader()
-            showPopup(e);
+            showPopup(jqXHR.responseJSON, true);
         },
         always: function () {
             closeLoader()
@@ -383,8 +370,8 @@ function getAccBalance(ownerId) {
             }).format(data.summary))
             $(buyerCashInp).data('cash', data.summary)
         })
-        .fail(function (e) {
-            showPopup('Что-то пошло не так [' + e.message + ']');
+        .fail(function (jqXHR) {
+            showPopup(jqXHR.responseJSON, true);
         })
 }
 
@@ -410,11 +397,11 @@ function resaleShare(reBuyDTO) {
         }
     })
         .done(function (data) {
-            showPopup(data.message)
+            showPopup(data.message, false)
         })
         .fail(function (jqXHR) {
             reBuyModal.modal('hide')
-            showPopup(jqXHR.responseText);
+            showPopup(jqXHR.responseJSON, true);
         })
         .always(function () {
             closeLoader()

@@ -369,13 +369,13 @@ function saveUser(user) {
                 $('#user-form-modal').find('#loginError').html(data.error).addClass('d-block')
             } else {
                 $('#user-form-modal').modal('hide')
-                showPopup(data.message);
+                showPopup(data.message, false);
                 clearUserForm()
             }
         },
-        error: function (e) {
+        error: function (jqXHR) {
             closeLoader();
-            showPopup(e.error);
+            showPopup(jqXHR.responseJSON, true);
         }
     });
 }
@@ -407,11 +407,11 @@ function deleteUser(userId) {
         },
         success: function (data) {
             closeLoader();
-            showPopup(data.message)
+            showPopup(data.message, false)
         },
-        error: function (e) {
+        error: function (jqXHR) {
             closeLoader();
-            showPopup(e.error)
+            showPopup(jqXHR.responseJSON, true)
         }
     });
 }
@@ -443,30 +443,17 @@ function deactivate(userId) {
         },
         success: function (data) {
             closeLoader();
-            showPopup(data.message)
+            showPopup(data.message, false)
         },
-        error: function (e) {
+        error: function (jqXHR) {
             closeLoader();
-            showPopup(e.error)
+            showPopup(jqXHR.responseJSON, true)
         }
     });
 }
 
 function enableSearchButton(flag) {
     $("#btn-search").prop("disabled", flag);
-}
-
-/**
- * Показать сообщений
- *
- * @param message {String}
- */
-function showPopup(message) {
-    $('#msg').html(message);
-    $('#msg-modal').modal('show');
-    setTimeout(function () {
-        $('#msg-modal').modal('hide');
-    }, 3000);
 }
 
 /**
@@ -527,9 +514,9 @@ function getUser(userId) {
             closeLoader();
             showUpdateUserForm(data)
         },
-        error: function (e) {
+        error: function (jqXHR) {
             closeLoader();
-            showPopup(e.error)
+            showPopup(jqXHR.responseJSON, true)
         }
     });
 }

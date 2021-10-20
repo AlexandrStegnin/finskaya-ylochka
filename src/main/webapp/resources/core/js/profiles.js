@@ -63,7 +63,7 @@ function subscribeTxShowClick() {
 function onDisposeOfFundsClick() {
     $('#disposeOfFunds').on('click', function (e) {
         e.preventDefault()
-        showPopup('Функционал в разработке (;')
+        showPopup('Функционал в разработке (;', false)
     })
 }
 
@@ -85,20 +85,6 @@ function onChangeBsSelect() {
         }
     });
 }
-
-/**
- * Показать сообщение
- *
- * @param message {String}
- */
-function showPopup(message) {
-    $('#msg').html(message);
-    $('#msg-modal').modal('show');
-    setTimeout(function () {
-        $('#msg-modal').modal('hide');
-    }, 3000);
-}
-
 
 /**
  * Получить детализацию по счёту
@@ -123,8 +109,8 @@ function getDetails(accSummaryDTO) {
         .done(function (data) {
             createDetailTable(data);
         })
-        .fail(function (e) {
-            showPopup('Что-то пошло не так [' + e.message + ']');
+        .fail(function (jqXHR) {
+            showPopup(jqXHR.responseJSON, true);
         })
         .always(function () {
             console.log('Закончили!');

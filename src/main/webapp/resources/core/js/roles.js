@@ -153,27 +153,14 @@ function save(roleDTO, action) {
         },
         success: function (data) {
             closeLoader();
-            showPopup(data.message);
+            showPopup(data.message, false);
             window.location.href = 'list'
         },
-        error: function (e) {
+        error: function (jqXHR) {
             closeLoader();
-            showPopup(e.error);
+            showPopup(jqXHR.responseJSON, true);
         }
     });
-}
-
-/**
- * Показать сообщение
- *
- * @param message {String}
- */
-function showPopup(message) {
-    $('#msg').html(message);
-    $('#msg-modal').modal('show');
-    setTimeout(function () {
-        $('#msg-modal').modal('hide');
-    }, 3000);
 }
 
 /**
@@ -201,9 +188,9 @@ function getRole(roleId) {
         success: function (data) {
             showUpdateRoleForm(data)
         },
-        error: function (e) {
+        error: function (jqXHR) {
             closeLoader();
-            showPopup(e.error);
+            showPopup(jqXHR.responseJSON, true);
         }
     });
 }
@@ -276,11 +263,11 @@ function deleteRole(roleId) {
             xhr.setRequestHeader(header, token);
         },
         success: function (data) {
-            showPopup(data.message)
+            showPopup(data.message, false)
         },
-        error: function (e) {
+        error: function (jqXHR) {
             closeLoader();
-            showPopup(e.error)
+            showPopup(jqXHR.responseJSON, true)
         }
     });
 }

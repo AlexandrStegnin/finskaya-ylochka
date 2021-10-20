@@ -358,12 +358,11 @@ function reinvestSalePayments(salePaymentDTO) {
         },
         success: function (data) {
             closeLoader();
-            showPopup(data.message)
+            showPopup(data.message, false)
         },
-        error: function (e) {
+        error: function (jqXHR) {
             closeLoader();
-            showPopup(e.error)
-            console.log(e.error);
+            showPopup(jqXHR.responseJSON, true)
         },
         done: function (e) {
             closeLoader();
@@ -374,14 +373,6 @@ function reinvestSalePayments(salePaymentDTO) {
 
 function checkChecked() {
     return $('table#salePayments').find('[type="checkbox"]:checked:not(:disabled)').length;
-}
-
-function showPopup(message) {
-    $('#msg').html(message);
-    $('#msg-modal').modal('show');
-    setTimeout(function () {
-        $('#msg-modal').modal('hide');
-    }, 3000);
 }
 
 function blockUnblockDropdownMenus(blockUnblock, noDivide) {
@@ -424,13 +415,12 @@ function deleteList(cashIdList) {
     })
         .done(function (data) {
             closeLoader();
-            showPopup(data.message);
+            showPopup(data.message, false);
             $('#bth-search').click()
         })
-        .fail(function (e) {
+        .fail(function (jqXHR) {
             closeLoader();
-            showPopup(e.error);
-            console.log(e.error);
+            showPopup(jqXHR.responseJSON, true);
         })
         .always(function () {
             closeLoader();
@@ -558,16 +548,16 @@ function upload() {
         },
         success: function (data) {
             closeLoader();
-            showPopup(data.message);
+            showPopup(data.message, false);
             if (data.status !== 412) {
                 $('#bth-search').click()
             } else {
                 $('#file').val('')
             }
         },
-        error: function (e) {
+        error: function (jqXHR) {
             closeLoader();
-            showPopup(e.error);
+            showPopup(jqXHR.responseJSON, true);
             disconnect();
         }
     });

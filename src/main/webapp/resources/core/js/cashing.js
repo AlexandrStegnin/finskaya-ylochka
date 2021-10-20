@@ -190,7 +190,7 @@ function cashing(dto) {
             if (status === 200) {
                 cashingForm.modal('hide')
                 closeLoader();
-                showPopup(data.message);
+                showPopup(data.message, false);
                 window.location.href = '/money/list';
             } else {
                 closeLoader();
@@ -201,7 +201,7 @@ function cashing(dto) {
         },
         error: function (e) {
             closeLoader();
-            showPopup('Что-то пошло не так = [' + e.error + "]");
+            showPopup(e.responseJSON, true);
         },
         done: function (e) {
             enableSearchButton(true);

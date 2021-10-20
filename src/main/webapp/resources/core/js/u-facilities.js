@@ -139,8 +139,7 @@ function getUnderFacility(ufId) {
             showUpdateUnderFacilityForm(data)
         })
         .fail(function (jqXHR) {
-            $('#content').addClass('bg-warning')
-            showPopup(jqXHR.responseText);
+            showPopup(jqXHR.responseJSON, true);
         })
         .always(function () {
             console.log('Закончили!');
@@ -256,12 +255,11 @@ function save(ufDTO, action) {
         }})
         .done(function (data) {
             closeLoader()
-            showPopup(data.message);
+            showPopup(data.message, false);
             window.location.href = 'list'
         })
         .fail(function (jqXHR) {
-            $('#content').addClass('bg-warning')
-            showPopup(jqXHR.responseText);
+            showPopup(jqXHR.responseJSON, true);
         })
         .always(function () {
             closeLoader()
@@ -308,12 +306,12 @@ function deleteUnderFacility(ufId) {
         }})
         .done(function (data) {
             closeLoader()
-            showPopup(data.message);
+            showPopup(data.message, false);
             window.location.href = 'list'
         })
         .fail(function (jqXHR) {
             $('#content').addClass('bg-warning')
-            showPopup(jqXHR.responseText);
+            showPopup(jqXHR.responseJSON, true);
         })
         .always(function () {
             closeLoader()

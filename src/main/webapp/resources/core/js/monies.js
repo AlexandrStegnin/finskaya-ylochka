@@ -879,10 +879,10 @@ function reinvestCash(facilityToReinvestId, underFacilityToReinvestId, shareType
         },
         success: function (data) {
             closeLoader();
-            showPopup(data.message);
+            showPopup(data.message, false);
         },
-        error: function (e) {
-            showPopup('Что-то пошло не так = [' + e.error + "]");
+        error: function (jqXHR) {
+            showPopup(jqXHR.responseJSON, true);
             closeLoader()
         },
         done: function (e) {
@@ -964,10 +964,10 @@ function saveDivideCash(cashes, reUnderFacility, excludedUnderFacilities) {
         },
         success: function (data) {
             closeLoader()
-            showPopup(data.message);
+            showPopup(data.message, false);
         },
-        error: function (e) {
-            showPopup('Что-то пошло не так [' + e + ']');
+        error: function (jqXHR) {
+            showPopup(jqXHR.responseJSON, true);
             closeLoader()
         },
         done: function (e) {
@@ -1001,10 +1001,10 @@ function divideMultiple(cashes, reUnderFacilitiesList, excludedUnderFacilities) 
         },
         success: function (data) {
             closeLoader()
-            showPopup(data.message);
+            showPopup(data.message, false);
         },
-        error: function (e) {
-            showPopup('Что-то пошло не так [' + e.error + ']');
+        error: function (jqXHR) {
+            showPopup(jqXHR.responseJSON, true);
             closeLoader()
         },
         done: function (e) {
@@ -1037,12 +1037,11 @@ function deleteCash(cashIdList) {
     })
         .done(function (data) {
             closeLoader()
-            showPopup(data.message);
+            showPopup(data.message, false);
         })
         .fail(function (jqXHR) {
             closeLoader()
-            $('#content').addClass('bg-warning')
-            showPopup(jqXHR.responseText);
+            showPopup(jqXHR.responseJSON, true);
         })
         .always(function () {
             console.log('Закончили!');
@@ -1102,11 +1101,11 @@ function closeCash(cashIdList, invBuyer, dateClosingInvest, what, realDateGiven)
         },
         success: function (data) {
             closeLoader();
-            showPopup(data.message);
+            showPopup(data.message, false);
         },
-        error: function (e) {
+        error: function (jqXHR) {
             closeLoader()
-            showPopup(e.toLocaleString());
+            showPopup(jqXHR.responseJSON, true);
         },
         always: function () {
             closeLoader()
@@ -1153,14 +1152,6 @@ function blockActions() {
             $(this).closest('tr').find('#aEdit').addClass('disabled');
         })
     });
-}
-
-function showPopup(message) {
-    $('#msg').html(message);
-    $('#msg-modal').modal('show');
-    setTimeout(function () {
-        $('#msg-modal').modal('hide');
-    }, 3000);
 }
 
 function linkHasClass(link) {
@@ -1277,7 +1268,7 @@ function saveMoney(moneyDTO) {
             switch (moneyDTO.operation) {
                 case OperationEnum.CREATE:
                     if (status === 200) {
-                        showPopup(data.message);
+                        showPopup(data.message, false);
                         clearMoneyForm()
                     } else {
                         $('#confirm-create').modal('show');
@@ -1287,15 +1278,15 @@ function saveMoney(moneyDTO) {
                 case OperationEnum.RESALE:
                 case OperationEnum.CASHING:
                 case OperationEnum.REINVEST:
-                    showPopup(data.message);
+                    showPopup(data.message, false);
                     window.location.href = '../list'
                     break
             }
 
         },
-        error: function (e) {
+        error: function (jqXHR) {
             closeLoader()
-            showPopup(e.error);
+            showPopup(jqXHR.responseJSON, true);
         },
         always: function () {
             closeLoader()
@@ -1497,11 +1488,11 @@ function acceptMonies(acceptedMoneyDTO) {
         },
         success: function (data) {
             closeLoader();
-            showPopup(data.message)
+            showPopup(data.message, false)
         },
-        error: function (e) {
+        error: function (jqXHR) {
             closeLoader()
-            showPopup(e.error);
+            showPopup(jqXHR.responseJSON, true);
         },
         always: function () {
             closeLoader()

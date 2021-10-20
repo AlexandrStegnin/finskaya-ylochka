@@ -90,12 +90,11 @@ function takeMoney(takeMoneyDTO) {
     })
         .done(function (data) {
             takeMoneyForm.modal('hide')
-            showPopup(data.message);
+            showPopup(data.message, false);
             $('#btn-search').click()
         })
         .fail(function (jqXHR) {
-            $('#content').addClass('bg-warning')
-            showPopup(jqXHR.responseText);
+            showPopup(jqXHR.responseJSON, true);
         })
         .always(function () {
             closeLoader()

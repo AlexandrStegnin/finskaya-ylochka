@@ -3,6 +3,8 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <!DOCTYPE html>
 <head>
@@ -125,13 +127,15 @@
            id="users-table">
         <thead style="text-align: center">
         <tr>
-            <th>ID</th>
-            <th>Имя пользователя</th>
-            <th>Email</th>
-            <th>Подтверждён</th>
-            <th>Деактивирован</th>
-            <th>Роль</th>
-            <th>Партнёр</th>
+<%--            <th scope="col">ID</th>--%>
+            <th scope="col">Имя пользователя</th>
+            <th scope="col">Email</th>
+            <th scope="col">Подтверждён</th>
+            <th scope="col">Деактивирован</th>
+            <th scope="col">Роль</th>
+            <th scope="col">Партнёр</th>
+<%--            <th scope="col">Телефоны</th>--%>
+            <th scope="col">Телефоны</th>
             <sec:authorize access="hasRole('ADMIN') or hasRole('DBA')">
                 <th style="text-align: center">Действие</th>
             </sec:authorize>
@@ -140,7 +144,7 @@
         <tbody style="text-align: center">
         <c:forEach items="${page.content}" var="user">
             <tr id="${user.id}">
-                <td>${user.id}</td>
+<%--                <td>${user.id}</td>--%>
                 <td>${user.login}</td>
                 <td>${user.profile.email}</td>
                 <c:choose>
@@ -161,6 +165,20 @@
                 </c:choose>
                 <td>${user.role.humanized}</td>
                 <td>${user.partner.login}</td>
+                <td>
+                    <sec:authorize access="isFullyAuthenticated()">
+                        <sec:authorize access="hasRole('ADMIN')">
+                            <button type="button" class="btn btn-sm btn-success show-phones" data-toggle="tooltip"
+                                    data-placement="left" title="Посмотреть телефоны" data-user-id="${user.id}">
+                                <em class="fas fa-eye"></em>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-success add-phone" data-toggle="tooltip"
+                                    data-placement="left" title="Добавить телефон" data-user-id="${user.id}">
+                                <em class="fas fa-plus"></em>
+                            </button>
+                        </sec:authorize>
+                    </sec:authorize>
+                </td>
                 <sec:authorize access="isFullyAuthenticated()">
                     <sec:authorize access="hasRole('ADMIN') or hasRole('DBA')">
                         <td style="text-align: center">
@@ -190,6 +208,9 @@
 <%@include file="ddk_loader.jsp" %>
 <%@include file="confirm-form.jsp" %>
 <%@include file="user-form.jsp" %>
+<%@include file="phone-popup-table.jsp" %>
+<%@include file="confirm-delete-phone-form.jsp"%>
+<%@include file="phone-form.jsp"%>
 
 <script type="text/javascript"
         src="<c:url value='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js' />"></script>
@@ -205,5 +226,6 @@
 <script type="text/javascript" src="<c:url value='/resources/core/js/jsFunctions.js' />"></script>
 <script type="text/javascript" src="<c:url value='/resources/core/js/scripts.js' />"></script>
 <script type="text/javascript" src="<c:url value='/resources/core/js/users.js' />"></script>
+<script type="text/javascript" src="<c:url value='/resources/core/js/phones.js' />"></script>
 </body>
 </html>

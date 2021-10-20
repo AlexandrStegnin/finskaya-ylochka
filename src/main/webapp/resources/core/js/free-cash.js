@@ -103,8 +103,8 @@ function getDetails(accSummaryDTO) {
         .done(function (data) {
             createDetailTable(data);
         })
-        .fail(function (e) {
-            showPopup('Что-то пошло не так [' + e.message + ']');
+        .fail(function (jqXHR) {
+            showPopup(jqXHR.responseJSON, true);
         })
         .always(function () {
             console.log('Закончили!');
@@ -146,20 +146,6 @@ function subscribeTxShowClick() {
         accSummaryDTO.build(ownerId, accFilter.payers)
         getDetails(accSummaryDTO)
     })
-}
-
-/**
- * Показать сообщение
- *
- * @param message {String}
- */
-function showPopup(message) {
-    $('#msg').html(message);
-    $('#msg-modal').modal('show');
-    closeLoader()
-    setTimeout(function () {
-        $('#msg-modal').modal('hide');
-    }, 3000);
 }
 
 /**

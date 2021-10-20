@@ -18,7 +18,6 @@
     <script type="text/javascript" src="<c:url value='/resources/core/js/bootstrap.min_old.js' />" ></script>
     <script type="text/javascript" src="<c:url value='/resources/core/js/scripts.js' />" ></script>
     <script type="text/javascript" src="<c:url value='/resources/core/js/ddk_loader.js' />" ></script>
-    <script type="text/javascript" src="<c:url value='/resources/core/js/popupScripts.js' />" ></script>
     <script type="text/javascript" src="<c:url value='/resources/core/js/type-closing.js' />" ></script>
     <link rel="shortcut icon" href="<c:url value='/resources/core/img/favicon/favicon.ico?v=eEY755nn99' />">
 </head>

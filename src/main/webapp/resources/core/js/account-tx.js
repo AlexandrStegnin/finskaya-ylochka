@@ -165,12 +165,11 @@ function deleteTransactions(accountTxDTO) {
         }
     })
         .done(function (data) {
-            showPopup(data.message);
+            showPopup(data.message, false);
             $('#btn-search').click()
         })
         .fail(function (jqXHR) {
-            $('#content').addClass('bg-warning')
-            showPopup(jqXHR.responseText);
+            showPopup(jqXHR.responseJSON, true);
         })
         .always(function () {
             closeLoader()
@@ -200,20 +199,6 @@ function toggleAllRows() {
     $('#all').on('change', function () {
         $('#btn-search').click()
     })
-}
-
-/**
- * Показать сообщение
- *
- * @param message {String}
- */
-function showPopup(message) {
-    $('#msg').html(message);
-    $('#msg-modal').modal('show');
-    setTimeout(function () {
-        $('#msg-modal').modal('hide');
-        $('#content').removeClass('bg-warning')
-    }, 3000);
 }
 
 /**
@@ -254,8 +239,8 @@ function getBalance(ownerId) {
         .done(function (data) {
             createBalanceTable(data);
         })
-        .fail(function (e) {
-            showPopup('Что-то пошло не так [' + e.message + ']');
+        .fail(function (jqXHR) {
+            showPopup(jqXHR.responseJSON, true);
         })
         .always(function () {
             closeLoader()
@@ -520,15 +505,15 @@ function reinvest(accTxReinvestDTO) {
         success: function (data) {
             closeLoader();
             if (data.status === 200) {
-                showPopup(data.message)
+                showPopup(data.message, false)
                 $('#btn-search').click()
             } else {
-                showPopup(data.error)
+                showPopup(data.error, true)
             }
         },
-        error: function (e) {
+        error: function (jqXHR) {
             closeLoader()
-            showPopup(e);
+            showPopup(jqXHR.responseJSON, true);
         },
         always: function () {
             closeLoader()

@@ -74,7 +74,7 @@ function create() {
             xhr.setRequestHeader(header, token);
         },
         success: function(data) {
-            showPopup(data.message);
+            showPopup(data.message, false);
             if (data.status === 200) {
                 clearForm();
             }
@@ -108,19 +108,6 @@ function clearForm() {
     $('#f_name').val('');
     $('#full_name').val('');
     $('#city').val('');
-}
-
-/**
- * Показать сообщение
- *
- * @param message {String}
- */
-function showPopup(message) {
-    $('#msg').html(message);
-    $('#msg-modal').modal('show');
-    setTimeout(function () {
-        $('#msg-modal').modal('hide');
-    }, 3000);
 }
 
 /**
@@ -172,9 +159,9 @@ function getFacility(facilityId) {
         success: function (data) {
             showUpdateFacilityForm(data)
         },
-        error: function (e) {
+        error: function (jqXHR) {
             closeLoader();
-            showPopup(e.error);
+            showPopup(jqXHR.responseJSON, true);
         }
     });
 }
@@ -320,12 +307,12 @@ function save(facilityDTO, action) {
         },
         success: function (data) {
             closeLoader();
-            showPopup(data.message);
+            showPopup(data.message, false);
             window.location.href = 'list'
         },
-        error: function (e) {
+        error: function (jqXHR) {
             closeLoader();
-            showPopup(e.error);
+            showPopup(jqXHR.responseJSON, true);
         }
     });
 }
@@ -367,11 +354,11 @@ function deleteFacility(facilityId) {
             xhr.setRequestHeader(header, token);
         },
         success: function (data) {
-            showPopup(data.message)
+            showPopup(data.message, false)
         },
-        error: function (e) {
+        error: function (jqXHR) {
             closeLoader();
-            showPopup(e.error)
+            showPopup(jqXHR.responseJSON, true)
         }
     });
 }
