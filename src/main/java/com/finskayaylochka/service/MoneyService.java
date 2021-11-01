@@ -671,15 +671,15 @@ public class MoneyService {
         .stream()
         .map(Room::getCost)
         .reduce(BigDecimal.ZERO, BigDecimal::add)
-        .setScale(2, BigDecimal.ROUND_CEILING);
+        .setScale(2, RoundingMode.CEILING);
 
     // Вычисляем стоимость подобъекта, куда надо разделить сумму
     BigDecimal coastUnderFacility = underFacility.getRooms().stream()
         .map(Room::getCost)
-        .reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, BigDecimal.ROUND_CEILING);
+        .reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, RoundingMode.CEILING);
 
     // Вычисляем % для выделения доли
-    BigDecimal divided = coastUnderFacility.divide(coastFacility, 20, BigDecimal.ROUND_CEILING);
+    BigDecimal divided = coastUnderFacility.divide(coastFacility, 20, RoundingMode.CEILING);
     monies = monies
         .stream()
         .filter(f -> Objects.nonNull(f.getGivenCash()))
@@ -690,7 +690,7 @@ public class MoneyService {
     Set<Money> newMonies = new HashSet<>();
     monies.forEach(f -> {
       counter[0]++;
-      sendStatus(String.format("Разделеляем %d из %d сумм", counter[0], sumsCnt));
+      sendStatus(String.format("Разделяем %d из %d сумм", counter[0], sumsCnt));
       BigDecimal invCash = f.getGivenCash();
       BigDecimal sumInUnderFacility = divided.multiply(invCash);
       BigDecimal sumRemainder = invCash.subtract(sumInUnderFacility);

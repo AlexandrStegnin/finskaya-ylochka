@@ -199,8 +199,6 @@
             <th>Дата закрытия</th>
             <th>Вид закрытия</th>
             <th>Подобъект источник</th>
-            <th style="width: 50px">Из 1С</th>
-            <th style="width: 50px">Согласована</th>
             <sec:authorize access="hasRole('ADMIN') or hasRole('DBA')">
                 <th style="text-align: center">Действие</th>
             </sec:authorize>
@@ -223,16 +221,6 @@
                 <td>${money.getDateClosingToLocalDate()}</td>
                 <td>${money.typeClosing.name}</td>
                 <td>${money.sourceUnderFacility.name}</td>
-                <c:set var="is1C" value="Да"/>
-                <c:if test="${empty money.transactionUUID}">
-                    <c:set var="is1C" value="Нет"/>
-                </c:if>
-                <td>${is1C}</td>
-                <c:set var="active" value="Да"/>
-                <c:if test="${money.state != 'ACTIVE'}">
-                    <c:set var="active" value="Нет"/>
-                </c:if>
-                <td>${active}</td>
 
                 <sec:authorize access="isFullyAuthenticated()">
                     <sec:authorize access="hasRole('ADMIN') or hasRole('DBA')">
