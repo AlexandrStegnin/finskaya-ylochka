@@ -3,6 +3,7 @@ package com.finskayaylochka.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.finskayaylochka.model.supporting.dto.AppRoleDTO;
+import com.finskayaylochka.model.supporting.dto.PhoneDTO;
 import com.finskayaylochka.model.supporting.dto.UserDTO;
 import com.finskayaylochka.model.supporting.enums.KinEnum;
 import lombok.AccessLevel;
@@ -10,6 +11,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
+import org.apache.commons.collections4.CollectionUtils;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -74,6 +76,19 @@ public class AppUser implements Serializable {
     this.kin = userDTO.getKin() == null ? null : KinEnum.fromValue(userDTO.getKin());
     this.partner = makePartner(userDTO.getPartnerId());
     this.password = userDTO.getPassword();
+    this.phones.addAll(convertPhones(userDTO.getPhones()));
+  }
+
+  private List<Phone> convertPhones(List<PhoneDTO> phones) {
+    List<Phone> phonesList = new ArrayList<>();
+    CollectionUtils.emptyIfNull(phones).forEach(phoneDTO -> {
+      Phone phone = new Phone();
+      phone.setUser(this);
+      phone.setNumber(phoneDTO.getNumber());
+      phone.setId(phoneDTO.getId());
+      phonesList.add(phone);
+    });
+    return phonesList;
   }
 
   AppRole convertRole(AppRoleDTO dto) {

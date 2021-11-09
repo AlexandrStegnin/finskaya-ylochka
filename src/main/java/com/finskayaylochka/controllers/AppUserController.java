@@ -184,7 +184,7 @@ public class AppUserController {
   public @ResponseBody
   ApiResponse deleteUser(@RequestBody UserDTO userDTO) {
     if (userDTO.getId() == null) {
-      return new ApiResponse("Не задан id пользоватея для удаления", HttpStatus.BAD_REQUEST.value());
+      return new ApiResponse("Не задан id пользователя для удаления", HttpStatus.BAD_REQUEST.value());
     }
     ApiResponse response = new ApiResponse();
     AppUser user = appUserService.findById(userDTO.getId());

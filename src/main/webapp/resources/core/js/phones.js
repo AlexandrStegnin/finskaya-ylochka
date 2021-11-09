@@ -120,11 +120,11 @@ function onDeletePhoneClick() {
         e.preventDefault()
         let phoneId = $(this).data('id')
         phonesPopup.modal('hide')
-        showConfirmForm(phoneId)
+        showConfirmDeleteForm(phoneId)
     })
 }
 
-function showConfirmForm(phoneId) {
+function showConfirmDeleteForm(phoneId) {
     confirmDeletePhone.find('#title').text('УДАЛЕНИЕ')
     confirmDeletePhone.find('#message').text('ВЫ ХОТИТЕ УДАЛИТЬ ТЕЛЕФОН?')
     confirmDeletePhone.find('#accept').attr('data-object-id', phoneId)

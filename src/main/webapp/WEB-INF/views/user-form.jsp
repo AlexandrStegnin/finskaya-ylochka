@@ -32,9 +32,19 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="form-group row">
+                            <label class="col-sm-2 offset-sm-2 col-form-label-sm" for="phone">Телефон:</label>
+                            <div class="col-md-6">
+                                <form:input type="tel" path="phones" id="phone" class="form-control input-sm"
+                                            placeholder="+79998887766" required="required"/>
+                                <div class="has-error d-none" id="phoneError">
+                                    Необходимо ввести телефон
+                                </div>
+                            </div>
+                        </div>
 
                         <div class="form-group row">
-                            <label class="col-sm-2 offset-sm-2 col-form-label-sm" for="roles">Роли:</label>
+                            <label class="col-sm-2 offset-sm-2 col-form-label-sm" for="roles">Роль:</label>
                             <div class="col-md-6">
                                 <form:select path="role" id="roles" items="${roles}" multiple="false"
                                              itemValue="id" itemLabel="humanized" class="form-control form-control-sm selectpicker"
@@ -90,7 +100,7 @@
                 </div>
             </div>
             <div class="modal-footer" data-action="" id="action">
-                <button type="button" class="btn btn-primary" id="accept">Создать</button>
+                <button type="button" class="btn btn-primary" id="create-user">Создать</button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
             </div>
         </div>

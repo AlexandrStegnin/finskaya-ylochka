@@ -1,12 +1,13 @@
 package com.finskayaylochka.model.supporting.dto;
 
-import com.finskayaylochka.model.supporting.enums.KinEnum;
 import com.finskayaylochka.model.AppRole;
 import com.finskayaylochka.model.AppUser;
 import com.finskayaylochka.model.UserProfile;
+import com.finskayaylochka.model.supporting.enums.KinEnum;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -21,18 +22,13 @@ import java.util.Objects;
 public class UserDTO {
 
     Long id;
-
     String login;
-
     AppRoleDTO role;
-
     String kin;
-
     Long partnerId;
-
     String password;
-
     UserProfileDTO profile;
+    List<PhoneDTO> phones;
 
     public UserDTO(AppUser entity) {
         this.id = entity.getId();

@@ -44,12 +44,17 @@ UserDTO.prototype = {
     partnerId: null,
     profile: null,
     kin: null,
-    build: function (id, login, role, partnerId, kin) {
+    phones: null,
+    build: function (id, login, role, partnerId, kin, phone) {
         this.id = id;
         this.login = login;
         this.role = role;
         this.partnerId = partnerId;
         this.kin = kin;
+        this.phones = []
+        this.phones[0] = {
+            number: phone
+        }
     },
     buildPartner: function (id, login) {
         this.id = id;
@@ -90,20 +95,20 @@ jQuery(document).ready(function ($) {
     $('#create-user').on('click', function (e) {
         e.preventDefault()
         userForm.find('#title').html('Создание пользователя')
-        userForm.find('#accept').html('Создать')
+        userForm.find('#create-user').html('Создать')
         userForm.modal('show')
     })
 
     $('.edit-user').on('click', function (e) {
         e.preventDefault()
         userForm.find('#title').html('Обновить пользователя')
-        userForm.find('#accept').html('Обновить')
-        userForm.find('#accept').attr('data-action', OperationEnum.UPDATE)
+        userForm.find('#create-user').html('Обновить')
+        userForm.find('#create-user').attr('data-action', OperationEnum.UPDATE)
         let userId = $(this).attr('data-user-id')
         getUser(userId)
     })
 
-    userForm.find('#accept').on('click', function () {
+    userForm.find('#create-user').on('click', function () {
         let userDTO = getUserDTO()
         if (checkUserDTO(userDTO)) {
             saveUser(userDTO)
@@ -188,7 +193,7 @@ jQuery(document).ready(function ($) {
     $('#login').blur(isValid.login);
     $('#email').blur(isValid.email);
 
-    $('a#delete').click(function (event) {
+    $('a#delete-user').click(function (event) {
         event.preventDefault();
         let userId = $(this).attr('data-user-id');
         showConfirmForm('Удаление пользователя', 'Действительно хотите удалить пользователя?', userId, OperationEnum.DELETE)
@@ -234,15 +239,15 @@ function checkUserDTO(userDTO) {
         loginError.removeClass('d-block')
     }
 
-    // let emailErr = $('#emailError')
-    // let emailValid = new RegExp("[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$")
-    // if (!emailValid.test(userDTO.profile.email)) {
-    //     emailErr.html('Введите email в формате mymail@example.ru')
-    //     emailErr.addClass('d-block')
-    //     return false
-    // } else {
-    //     emailErr.removeClass('d-block')
-    // }
+    let phoneErr = $('#phoneError')
+    let phoneValid = new RegExp("\\+[0-9]{11}$")
+    if (!phoneValid.test(userDTO.phones[0].number)) {
+        phoneErr.html('Введите телефон в формате +79998887766')
+        phoneErr.addClass('d-block')
+        return false
+    } else {
+        phoneErr.removeClass('d-block')
+    }
     let rolesError = $('#rolesError')
     if (userDTO.role.id === '0') {
         rolesError.addClass('d-block')
@@ -268,9 +273,10 @@ function getUserDTO() {
     }
     let kin = $('#kins').val();
     let userId = $('#id').val();
+    let phone = $('#phone').val()
 
     let userDTO = new UserDTO()
-    userDTO.build(userId, login, role, partnerId, kin)
+    userDTO.build(userId, login, role, partnerId, kin, phone)
     userDTO.profile = createProfile(userId, $('#lastName').val(), $('#firstName').val(), $('#patronymic').val(), $('#email').val());
 
     return userDTO

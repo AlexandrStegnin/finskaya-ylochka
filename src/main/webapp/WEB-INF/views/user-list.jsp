@@ -193,7 +193,7 @@
                                         <a href="<c:url value='#' />" data-user-id="${user.id}"
                                            class="dropdown-item deactivate">Деактивировать</a>
                                     </c:if>
-                                    <a class="dropdown-item" id="delete" href="<c:url value='/#' />"
+                                    <a class="dropdown-item" id="delete-user" href="<c:url value='/#' />"
                                        data-user-id="${user.id}" style="color: red">Удалить</a></div>
                             </div>
                         </td>
