@@ -94,6 +94,7 @@ function takeMoney(takeMoneyDTO) {
             $('#btn-search').click()
         })
         .fail(function (jqXHR) {
+            takeMoneyForm.modal('hide')
             showPopup(jqXHR.responseJSON, true);
         })
         .always(function () {

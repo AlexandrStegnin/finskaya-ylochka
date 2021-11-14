@@ -75,7 +75,7 @@ public class TakeMoneyService {
 
     if (balanceDTO.getSummary().compareTo(totalSumToTake) < 0) {
       throw ApiException.builder()
-          .message("Сумма инвестора меньше суммы к выводу")
+          .message(String.format("Сумма инвестора %s меньше суммы к выводу %s", balanceDTO.getSummary(), totalSumToTake))
           .status(HttpStatus.BAD_REQUEST)
           .build();
     }
