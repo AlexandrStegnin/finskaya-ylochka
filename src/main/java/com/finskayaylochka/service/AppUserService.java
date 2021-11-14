@@ -31,6 +31,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -141,6 +142,9 @@ public class AppUserService {
         user.setPassword(passwordEncoder.encode(password));
         user.getProfile().setUser(user);
         user.getProfile().setEmail(user.getProfile().getEmail().toLowerCase());
+        if (Objects.isNull(user.getProfile().getFirstName())) {
+            user.getProfile().setFirstName("Инвестор " + user.getLogin().substring(8));
+        }
         user.setLogin(user.getLogin().toLowerCase());
         appUserRepository.save(user);
         if (SecurityUtils.isUserInRole(user, UserRole.ROLE_INVESTOR)) {
