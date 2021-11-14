@@ -140,7 +140,7 @@ function onDeclineConfirm() {
 }
 
 function onAcceptConfirm() {
-    $(document).on('click','#accept', function (e) {
+    confirmDeletePhone.on('click','#accept', function (e) {
         e.preventDefault()
         let phoneId = $(this).data('object-id')
         deletePhone(phoneId)

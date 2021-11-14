@@ -81,6 +81,8 @@ let confirmForm
 
 jQuery(document).ready(function ($) {
     confirmForm = $('#confirm-form');
+    onCloseUserFormClick()
+    onPhoneFieldFocusOut()
     let userForm = $('#user-form-modal');
 
     $(document).on('click', 'a[name*="page_"]', function (e) {
@@ -106,12 +108,14 @@ jQuery(document).ready(function ($) {
         userForm.find('#create-user').attr('data-action', OperationEnum.UPDATE)
         let userId = $(this).attr('data-user-id')
         getUser(userId)
+        closeLoader()
     })
 
     userForm.find('#create-user').on('click', function () {
         let userDTO = getUserDTO()
         if (checkUserDTO(userDTO)) {
             saveUser(userDTO)
+            closeLoader()
         }
     })
 
@@ -216,8 +220,14 @@ jQuery(document).ready(function ($) {
 
 });
 
+function onCloseUserFormClick() {
+    $('#close-user-form').on('click', function (e) {
+        clearUserForm()
+    })
+}
+
 /**
- * Проверить правильность заполения формы
+ * Проверить правильность заполнения формы
  *
  * @param userDTO {UserDTO}
  * @return {boolean}
@@ -289,6 +299,7 @@ function getUserDTO() {
 function prepareUserSave() {
     let userDTO = getUserDTO()
     saveUser(userDTO);
+    closeLoader()
 }
 
 /**
@@ -382,6 +393,9 @@ function saveUser(user) {
         error: function (jqXHR) {
             closeLoader();
             showPopup(jqXHR.responseJSON, true);
+        },
+        always: function () {
+            closeLoader()
         }
     });
 }
@@ -472,9 +486,13 @@ function clearUserForm() {
     userModalForm.find('#patronymic').val('')
     userModalForm.find('#user-login').val('')
     userModalForm.find('#email').val('')
+    userModalForm.find('#phone').val('')
     userModalForm.find('#roles').prop('selectedIndex', -1)
+    userModalForm.find('#roles').selectpicker('refresh')
     userModalForm.find('#saleChanel').prop('selectedIndex', -1)
+    userModalForm.find('#saleChanel').selectpicker('refresh')
     userModalForm.find('#kins').prop('selectedIndex', -1)
+    userModalForm.find('#kins').selectpicker('refresh')
 }
 
 /**
@@ -523,6 +541,9 @@ function getUser(userId) {
         error: function (jqXHR) {
             closeLoader();
             showPopup(jqXHR.responseJSON, true)
+        },
+        always: function () {
+            closeLoader()
         }
     });
 }
@@ -534,7 +555,7 @@ function getUser(userId) {
  */
 function showUpdateUserForm(data) {
     let userDTO = new UserDTO()
-    userDTO.build(data.id, data.login, data.role, data.partnerId, data.kin)
+    userDTO.build(data.id, data.login, data.role, data.partnerId, data.kin, data.phones[0].number)
     userDTO.profile = data.profile
     let userForm = $('#user-form-modal')
     userForm.find('#id').val(userDTO.id)
@@ -544,6 +565,7 @@ function showUpdateUserForm(data) {
     bindRoles(userDTO.role)
     bindPartner(userDTO.partnerId)
     bindKin(userDTO.kin)
+    bindPhone(userDTO.phones[0].number)
     userForm.find('#lastName').val(userDTO.profile.lastName)
     userForm.find('#firstName').val(userDTO.profile.firstName)
     userForm.find('#patronymic').val(userDTO.profile.patronymic)
@@ -560,7 +582,7 @@ function bindRoles(role) {
     let userForm = $('#user-form-modal');
     $.each(userForm.find('#roles option'), function (ind, el) {
         if (el.value === (role.id + '')) {
-            $(el).attr('selected', 'selected')
+            $(el).prop('selected', true)
         }
     })
     userForm.find('#roles').selectpicker('refresh')
@@ -575,7 +597,7 @@ function bindPartner(partnerId) {
     let userForm = $('#user-form-modal');
     $.each(userForm.find('#saleChanel option'), function (ind, el) {
         if (el.value === (partnerId + '')) {
-            $(el).attr('selected', 'selected')
+            $(el).prop('selected', true)
         }
     })
     userForm.find('#saleChanel').selectpicker('refresh')
@@ -590,8 +612,25 @@ function bindKin(kin) {
     let userForm = $('#user-form-modal');
     $.each(userForm.find('#kins option'), function (ind, el) {
         if (el.value === (kin + '')) {
-            $(el).attr('selected', 'selected')
+            $(el).prop('selected', true)
         }
     })
     userForm.find('#kins').selectpicker('refresh')
+}
+
+/**
+ * Преобразовать телефон в выделенный элемент выпадающего списка
+ *
+ * @param phone
+ */
+function bindPhone(phone) {
+    let userForm = $('#user-form-modal');
+    userForm.find('#phone').val(phone)
+}
+
+function onPhoneFieldFocusOut() {
+    $('#phone').on('focusout', function (e) {
+        let phone = '+' + $(this).val().replace(/\D/g,'')
+        $('#user-form-modal').find('#phone').val(phone)
+    })
 }

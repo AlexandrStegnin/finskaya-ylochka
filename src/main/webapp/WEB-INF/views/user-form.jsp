@@ -101,7 +101,7 @@
             </div>
             <div class="modal-footer" data-action="" id="action">
                 <button type="button" class="btn btn-primary" id="create-user">Создать</button>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" id="close-user-form">Отмена</button>
             </div>
         </div>
     </div>
