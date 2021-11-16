@@ -269,8 +269,8 @@ public class UploadExcelService {
               .shareType(shareType)
               .cashInFacility(cashInFacility)
               .dateGiven(Date.from(cal.atStartOfDay(ZoneId.systemDefault()).toInstant()))
-              .cashInUnderFacility(cashInUnderFacility)
-              .profitToReInvest(profitToReinvest)
+              .cashInUnderFacility(cashInUnderFacility.setScale(2, RoundingMode.CEILING))
+              .profitToReInvest(profitToReinvest.setScale(2, RoundingMode.CEILING))
               .underFacility(underFacility)
               .dateSale(Date.from(calSale.atStartOfDay(ZoneId.systemDefault()).toInstant()))
               .build();
@@ -293,7 +293,7 @@ public class UploadExcelService {
 
               .collect(Collectors.toList());
 
-          if (flowsSaleList.size() == 0) {
+          if (flowsSaleList.isEmpty()) {
             salePayment.setIsReinvest(1);
             AccountTransaction transaction = userTransactions.get(user.getId());
             if (Objects.isNull(transaction)) {

@@ -550,7 +550,9 @@ function upload() {
             closeLoader();
             showPopup(data.message, false);
             if (data.status !== 412) {
-                $('#bth-search').click()
+                setTimeout(function () {
+                    $('#bth-search').click()
+                }, 3000);
             } else {
                 $('#file').val('')
             }
