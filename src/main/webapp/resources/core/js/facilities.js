@@ -308,7 +308,9 @@ function save(facilityDTO, action) {
         success: function (data) {
             closeLoader();
             showPopup(data.message, false);
-            window.location.href = 'list'
+            window.setTimeout(function(){
+                window.location.href = 'list'
+            }, 3000);
         },
         error: function (jqXHR) {
             closeLoader();
