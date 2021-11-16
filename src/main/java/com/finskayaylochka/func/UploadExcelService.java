@@ -117,207 +117,205 @@ public class UploadExcelService {
     LocalDate reportDate = null;
     for (Row row : sheet) {
       cel++;
-      if (cel > 1) {
-        if (row.getCell(0) != null && row.getCell(0).getCellTypeEnum() != CellType.BLANK) {
-          AccountTransaction parentTransaction = new AccountTransaction();
-          Calendar calendar = Calendar.getInstance();
-          try {
-            calendar.setTime(FORMAT.parse(row.getCell(4).getDateCellValue().toString()));
-          } catch (Exception ex) {
-            return new ApiResponse(String.format("Не удачная попытка конвертировать строку в дату. Строка %d, столбец 5", cel),
-                HttpStatus.PRECONDITION_FAILED.value());
-          }
+      if (cel > 1 && (row.getCell(0) != null && row.getCell(0).getCellTypeEnum() != CellType.BLANK)) {
+        AccountTransaction parentTransaction = new AccountTransaction();
+        Calendar calendar = Calendar.getInstance();
+        try {
+          calendar.setTime(FORMAT.parse(row.getCell(4).getDateCellValue().toString()));
+        } catch (Exception ex) {
+          return new ApiResponse(String.format("Не удачная попытка конвертировать строку в дату. Строка %d, столбец 5", cel),
+              HttpStatus.PRECONDITION_FAILED.value());
+        }
 
-          java.time.LocalDate cal = calendar.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        java.time.LocalDate cal = calendar.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
-          Calendar dateSale = Calendar.getInstance();
-          try {
-            Cell cell = row.getCell(8);
-            switch (cell.getCellTypeEnum()) {
-              case NUMERIC:
-                dateSale.setTime(FORMAT.parse(cell.getDateCellValue().toString()));
-                break;
-              case STRING:
-                dateSale.setTime(DDMMYYYY_FORMAT.parse(cell.getStringCellValue()));
-                break;
-            }
-          } catch (Exception ex) {
-            return new ApiResponse(String.format("Неудачная попытка конвертировать строку в дату. Строка %d, столбец 9", cel),
-                HttpStatus.PRECONDITION_FAILED.value());
-          }
-
-          java.time.LocalDate calSale = dateSale.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-          String realDateGivenStr;
-          Date realDateGiven = null;
-          Cell cell = row.getCell(9);
-          CellType cellType = cell.getCellTypeEnum();
-          switch (cellType) {
-            case STRING:
-              realDateGivenStr = cell.getStringCellValue();
-              try {
-                realDateGiven = FORMAT.parse(realDateGivenStr);
-              } catch (Exception ignored) {
-              }
-              break;
+        Calendar dateSale = Calendar.getInstance();
+        try {
+          Cell cell = row.getCell(8);
+          switch (cell.getCellTypeEnum()) {
             case NUMERIC:
-              realDateGiven = cell.getDateCellValue();
+              dateSale.setTime(FORMAT.parse(cell.getDateCellValue().toString()));
+              break;
+            case STRING:
+              dateSale.setTime(DDMMYYYY_FORMAT.parse(cell.getStringCellValue()));
               break;
           }
+        } catch (Exception ex) {
+          return new ApiResponse(String.format("Неудачная попытка конвертировать строку в дату. Строка %d, столбец 9", cel),
+              HttpStatus.PRECONDITION_FAILED.value());
+        }
 
-          try {
-            row.cellIterator().forEachRemaining(c -> c.setCellType(CellType.STRING));
-          } catch (Exception ignored) {
-          }
-
-          String lastName;
-          lastName = row.getCell(1).getStringCellValue();
-          if (Objects.isNull(lastName) || lastName.isEmpty()) {
-            return new ApiResponse(String.format("Не указан инвестор! Строка %d, столбец 2", cel),
-                HttpStatus.PRECONDITION_FAILED.value());
-          }
-
-          AppUser user = users.stream()
-              .filter(u -> Objects.nonNull(u.getProfile()))
-              .filter(u -> Objects.nonNull(u.getProfile().getLastName()))
-              .filter(u -> u.getProfile().getLastName().equalsIgnoreCase(lastName))
-              .findFirst()
-              .orElse(null);
-
-          if (Objects.isNull(user)) {
-            return new ApiResponse(String.format("Неудачная попытка найти пользователя \"%s\". Строка %d, столбец 2", lastName, cel),
-                HttpStatus.PRECONDITION_FAILED.value());
-          }
-
-          String facilityName = row.getCell(0).getStringCellValue();
-          if (Objects.isNull(facilityName) || facilityName.isEmpty()) {
-            return new ApiResponse(String.format("Не указан объект! Строка %d, столбец 1", cel),
-                HttpStatus.PRECONDITION_FAILED.value());
-          }
-
-          Facility facility = facilities.get(facilityName);
-          if (Objects.isNull(facility)) {
-            facility = facilityService.findByName(facilityName);
-            if (Objects.isNull(facility)) {
-              return new ApiResponse(String.format("Не указан или не верно указан объект \"%s\". Строка %d, столбец 1", facilityName, cel),
-                  HttpStatus.PRECONDITION_FAILED.value());
+        java.time.LocalDate calSale = dateSale.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        String realDateGivenStr;
+        Date realDateGiven = null;
+        Cell cell = row.getCell(9);
+        CellType cellType = cell.getCellTypeEnum();
+        switch (cellType) {
+          case STRING:
+            realDateGivenStr = cell.getStringCellValue();
+            try {
+              realDateGiven = FORMAT.parse(realDateGivenStr);
+            } catch (Exception ignored) {
             }
-          }
-          facilities.putIfAbsent(facilityName, facility);
+            break;
+          case NUMERIC:
+            realDateGiven = cell.getDateCellValue();
+            break;
+        }
 
-          String share = row.getCell(2).getStringCellValue();
-          if (Objects.isNull(share)) {
-            return new ApiResponse(String.format("Не указана доля. Строка %d, столбец 3", cel),
+        try {
+          row.cellIterator().forEachRemaining(c -> c.setCellType(CellType.STRING));
+        } catch (Exception ignored) {
+        }
+
+        String lastName;
+        lastName = row.getCell(1).getStringCellValue();
+        if (Objects.isNull(lastName) || lastName.isEmpty()) {
+          return new ApiResponse(String.format("Не указан инвестор! Строка %d, столбец 2", cel),
+              HttpStatus.PRECONDITION_FAILED.value());
+        }
+
+        AppUser user = users.stream()
+            .filter(u -> Objects.nonNull(u.getProfile()))
+            .filter(u -> Objects.nonNull(u.getProfile().getLastName()))
+            .filter(u -> u.getProfile().getLastName().equalsIgnoreCase(lastName))
+            .findFirst()
+            .orElse(null);
+
+        if (Objects.isNull(user)) {
+          return new ApiResponse(String.format("Неудачная попытка найти пользователя \"%s\". Строка %d, столбец 2", lastName, cel),
+              HttpStatus.PRECONDITION_FAILED.value());
+        }
+
+        String facilityName = row.getCell(0).getStringCellValue();
+        if (Objects.isNull(facilityName) || facilityName.isEmpty()) {
+          return new ApiResponse(String.format("Не указан объект! Строка %d, столбец 1", cel),
+              HttpStatus.PRECONDITION_FAILED.value());
+        }
+
+        Facility facility = facilities.get(facilityName);
+        if (Objects.isNull(facility)) {
+          facility = facilityService.findByName(facilityName);
+          if (Objects.isNull(facility)) {
+            return new ApiResponse(String.format("Не указан или не верно указан объект \"%s\". Строка %d, столбец 1", facilityName, cel),
                 HttpStatus.PRECONDITION_FAILED.value());
           }
-          ShareType shareType = shareKinds
-              .stream()
-              .filter(type -> type.getTitle().equalsIgnoreCase(share))
-              .findFirst()
-              .orElse(null);
+        }
+        facilities.putIfAbsent(facilityName, facility);
 
-          if (Objects.isNull(shareType)) {
-            return new ApiResponse(String.format("Не указана или не верно указана доля \"%s\". Строка %d, столбец 3", share, cel),
-                HttpStatus.PRECONDITION_FAILED.value());
-          }
+        String share = row.getCell(2).getStringCellValue();
+        if (Objects.isNull(share)) {
+          return new ApiResponse(String.format("Не указана доля. Строка %d, столбец 3", cel),
+              HttpStatus.PRECONDITION_FAILED.value());
+        }
+        ShareType shareType = shareKinds
+            .stream()
+            .filter(type -> type.getTitle().equalsIgnoreCase(share))
+            .findFirst()
+            .orElse(null);
 
-          String strCashInFacility = row.getCell(3).getStringCellValue();
-          BigDecimal cashInFacility;
-          try {
-            cashInFacility = new BigDecimal(strCashInFacility);
-          } catch (NumberFormatException ex) {
-            return new ApiResponse(String.format("Ошибка преобразования суммы \"Вложено в объект\". Строка %d, столбец 4", cel),
-                HttpStatus.PRECONDITION_FAILED.value());
-          }
+        if (Objects.isNull(shareType)) {
+          return new ApiResponse(String.format("Не указана или не верно указана доля \"%s\". Строка %d, столбец 3", share, cel),
+              HttpStatus.PRECONDITION_FAILED.value());
+        }
 
-          String strCashInUnderFacility = row.getCell(5).getStringCellValue();
-          BigDecimal cashInUnderFacility;
-          try {
-            cashInUnderFacility = new BigDecimal(strCashInUnderFacility);
-          } catch (NumberFormatException ex) {
-            return new ApiResponse(String.format("Ошибка преобразования суммы \"Вложено в подобъект\". Строка %d, столбец 6", cel),
-                HttpStatus.PRECONDITION_FAILED.value());
-          }
+        String strCashInFacility = row.getCell(3).getStringCellValue();
+        BigDecimal cashInFacility;
+        try {
+          cashInFacility = new BigDecimal(strCashInFacility);
+        } catch (NumberFormatException ex) {
+          return new ApiResponse(String.format("Ошибка преобразования суммы \"Вложено в объект\". Строка %d, столбец 4", cel),
+              HttpStatus.PRECONDITION_FAILED.value());
+        }
 
-          String strProfitToReinvest = row.getCell(6).getStringCellValue();
-          BigDecimal profitToReinvest;
-          try {
-            profitToReinvest = new BigDecimal(strProfitToReinvest).setScale(2, RoundingMode.HALF_UP);
-          } catch (NumberFormatException ex) {
-            return new ApiResponse(String.format("Ошибка преобразования суммы \"Сколько прибыли реинвест\". Строка %d, столбец 7", cel),
-                HttpStatus.PRECONDITION_FAILED.value());
-          }
+        String strCashInUnderFacility = row.getCell(5).getStringCellValue();
+        BigDecimal cashInUnderFacility;
+        try {
+          cashInUnderFacility = new BigDecimal(strCashInUnderFacility);
+        } catch (NumberFormatException ex) {
+          return new ApiResponse(String.format("Ошибка преобразования суммы \"Вложено в подобъект\". Строка %d, столбец 6", cel),
+              HttpStatus.PRECONDITION_FAILED.value());
+        }
 
-          String underFacilityName = row.getCell(7).getStringCellValue();
-          if (Objects.isNull(underFacilityName) || underFacilityName.isEmpty()) {
+        String strProfitToReinvest = row.getCell(6).getStringCellValue();
+        BigDecimal profitToReinvest;
+        try {
+          profitToReinvest = new BigDecimal(strProfitToReinvest).setScale(2, RoundingMode.HALF_UP);
+        } catch (NumberFormatException ex) {
+          return new ApiResponse(String.format("Ошибка преобразования суммы \"Сколько прибыли реинвест\". Строка %d, столбец 7", cel),
+              HttpStatus.PRECONDITION_FAILED.value());
+        }
+
+        String underFacilityName = row.getCell(7).getStringCellValue();
+        if (Objects.isNull(underFacilityName) || underFacilityName.isEmpty()) {
+          return new ApiResponse(String.format("Не указан или не верно указан подобъект \"%s\". Строка %d, столбец 8", underFacilityName, cel),
+              HttpStatus.PRECONDITION_FAILED.value());
+        }
+        UnderFacility underFacility = underFacilities.get(underFacilityName);
+        if (Objects.isNull(underFacility)) {
+          underFacility = underFacilityService.findByName(underFacilityName);
+          if (Objects.isNull(underFacility)) {
             return new ApiResponse(String.format("Не указан или не верно указан подобъект \"%s\". Строка %d, столбец 8", underFacilityName, cel),
                 HttpStatus.PRECONDITION_FAILED.value());
           }
-          UnderFacility underFacility = underFacilities.get(underFacilityName);
-          if (Objects.isNull(underFacility)) {
-            underFacility = underFacilityService.findByName(underFacilityName);
-            if (Objects.isNull(underFacility)) {
-              return new ApiResponse(String.format("Не указан или не верно указан подобъект \"%s\". Строка %d, столбец 8", underFacilityName, cel),
-                  HttpStatus.PRECONDITION_FAILED.value());
-            }
-          }
-          underFacilities.putIfAbsent(underFacilityName, underFacility);
-
-          SalePayment salePayment = SalePayment.builder()
-              .realDateGiven(realDateGiven)
-              .facility(facility)
-              .investor(user)
-              .shareType(shareType)
-              .cashInFacility(cashInFacility)
-              .dateGiven(Date.from(cal.atStartOfDay(ZoneId.systemDefault()).toInstant()))
-              .cashInUnderFacility(cashInUnderFacility.setScale(2, RoundingMode.CEILING))
-              .profitToReInvest(profitToReinvest.setScale(2, RoundingMode.CEILING))
-              .underFacility(underFacility)
-              .dateSale(Date.from(calSale.atStartOfDay(ZoneId.systemDefault()).toInstant()))
-              .build();
-
-          List<SalePayment> flowsSaleList = salePayments.stream()
-              .filter(flows -> globalFunctions.getMonthInt(flows.getDateSale()) ==
-                  globalFunctions.getMonthInt(salePayment.getDateSale()) &&
-                  globalFunctions.getYearInt(flows.getDateSale()) ==
-                      globalFunctions.getYearInt(salePayment.getDateSale()) &&
-                  globalFunctions.getDayInt(flows.getDateSale()) ==
-                      globalFunctions.getDayInt(salePayment.getDateSale()))
-
-              .filter(flows -> Objects.nonNull(flows.getFacility()) &&
-                  flows.getFacility().getId().equals(salePayment.getFacility().getId()))
-
-              .filter(flows -> Objects.nonNull(salePayment.getUnderFacility()) &&
-                  flows.getUnderFacility().getId().equals(salePayment.getUnderFacility().getId()))
-
-              .filter(flows -> flows.getInvestor().getId().equals(salePayment.getInvestor().getId()))
-
-              .collect(Collectors.toList());
-
-          if (flowsSaleList.isEmpty()) {
-            salePayment.setIsReinvest(1);
-            AccountTransaction transaction = userTransactions.get(user.getId());
-            if (Objects.isNull(transaction)) {
-              transaction = createSaleTransaction(user, salePayment, parentTransaction);
-            } else {
-              transaction = updateSaleTransaction(transaction, salePayment);
-            }
-            userTransactions.put(user.getId(), transaction);
-            reportDate = calSale;
-            if (investorsUnderFacilities.containsKey(user.getId())) {
-              List<Long> ufIds = investorsUnderFacilities.get(user.getId());
-              if (Objects.isNull(ufIds)) {
-                ufIds = new ArrayList<>();
-              }
-              ufIds.add(underFacility.getId());
-            } else {
-              List<Long> ufIds = new ArrayList<>();
-              ufIds.add(underFacility.getId());
-              investorsUnderFacilities.put(user.getId(), ufIds);
-            }
-            salePaymentService.create(salePayment);
-          }
-          closeOpenedMonies(investorsUnderFacilities, reportDate, parentTransaction);
         }
+        underFacilities.putIfAbsent(underFacilityName, underFacility);
+
+        SalePayment salePayment = SalePayment.builder()
+            .realDateGiven(realDateGiven)
+            .facility(facility)
+            .investor(user)
+            .shareType(shareType)
+            .cashInFacility(cashInFacility)
+            .dateGiven(Date.from(cal.atStartOfDay(ZoneId.systemDefault()).toInstant()))
+            .cashInUnderFacility(cashInUnderFacility.setScale(2, RoundingMode.CEILING))
+            .profitToReInvest(profitToReinvest.setScale(2, RoundingMode.CEILING))
+            .underFacility(underFacility)
+            .dateSale(Date.from(calSale.atStartOfDay(ZoneId.systemDefault()).toInstant()))
+            .build();
+
+        List<SalePayment> flowsSaleList = salePayments.stream()
+            .filter(flows -> globalFunctions.getMonthInt(flows.getDateSale()) ==
+                globalFunctions.getMonthInt(salePayment.getDateSale()) &&
+                globalFunctions.getYearInt(flows.getDateSale()) ==
+                    globalFunctions.getYearInt(salePayment.getDateSale()) &&
+                globalFunctions.getDayInt(flows.getDateSale()) ==
+                    globalFunctions.getDayInt(salePayment.getDateSale()))
+
+            .filter(flows -> Objects.nonNull(flows.getFacility()) &&
+                flows.getFacility().getId().equals(salePayment.getFacility().getId()))
+
+            .filter(flows -> Objects.nonNull(salePayment.getUnderFacility()) &&
+                flows.getUnderFacility().getId().equals(salePayment.getUnderFacility().getId()))
+
+            .filter(flows -> flows.getInvestor().getId().equals(salePayment.getInvestor().getId()))
+
+            .collect(Collectors.toList());
+
+        if (flowsSaleList.isEmpty()) {
+          salePayment.setIsReinvest(1);
+          AccountTransaction transaction = userTransactions.get(user.getId());
+          if (Objects.isNull(transaction)) {
+            transaction = createSaleTransaction(user, salePayment, parentTransaction);
+          } else {
+            transaction = updateSaleTransaction(transaction, salePayment);
+          }
+          userTransactions.put(user.getId(), transaction);
+          reportDate = calSale;
+          if (investorsUnderFacilities.containsKey(user.getId())) {
+            List<Long> ufIds = investorsUnderFacilities.get(user.getId());
+            if (Objects.isNull(ufIds)) {
+              ufIds = new ArrayList<>();
+            }
+            ufIds.add(underFacility.getId());
+          } else {
+            List<Long> ufIds = new ArrayList<>();
+            ufIds.add(underFacility.getId());
+            investorsUnderFacilities.put(user.getId(), ufIds);
+          }
+          salePaymentService.create(salePayment);
+        }
+        closeOpenedMonies(investorsUnderFacilities, reportDate, parentTransaction);
       }
     }
     return new ApiResponse("Загрузка файла с данными о продаже завершена");
