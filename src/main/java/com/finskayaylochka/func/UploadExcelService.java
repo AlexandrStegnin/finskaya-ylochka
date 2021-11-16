@@ -168,22 +168,19 @@ public class UploadExcelService {
         } catch (Exception ignored) {
         }
 
-        String lastName;
-        lastName = row.getCell(1).getStringCellValue();
-        if (Objects.isNull(lastName) || lastName.isEmpty()) {
+        String login = row.getCell(1).getStringCellValue();
+        if (Objects.isNull(login) || login.isEmpty()) {
           return new ApiResponse(String.format("Не указан инвестор! Строка %d, столбец 2", cel),
               HttpStatus.PRECONDITION_FAILED.value());
         }
 
         AppUser user = users.stream()
-            .filter(u -> Objects.nonNull(u.getProfile()))
-            .filter(u -> Objects.nonNull(u.getProfile().getLastName()))
-            .filter(u -> u.getProfile().getLastName().equalsIgnoreCase(lastName))
+            .filter(u -> u.getLogin().equalsIgnoreCase(login))
             .findFirst()
             .orElse(null);
 
         if (Objects.isNull(user)) {
-          return new ApiResponse(String.format("Неудачная попытка найти пользователя \"%s\". Строка %d, столбец 2", lastName, cel),
+          return new ApiResponse(String.format("Неудачная попытка найти пользователя \"%s\". Строка %d, столбец 2", login, cel),
               HttpStatus.PRECONDITION_FAILED.value());
         }
 
