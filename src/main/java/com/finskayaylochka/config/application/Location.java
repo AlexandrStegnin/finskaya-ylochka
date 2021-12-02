@@ -315,6 +315,7 @@ public class Location {
       SAVE_PASSWORD,
       SW_JS, LOGIN, LOGOUT,
       RESET_PASSWORD,
-      CHANGE_PASSWORD + WILD_CARD
+      CHANGE_PASSWORD + WILD_CARD,
+      "/agreement-personal-data" + WILD_CARD
   };
 }
