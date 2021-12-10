@@ -4,6 +4,7 @@ import com.finskayaylochka.model.supporting.enums.CashType;
 import com.finskayaylochka.model.supporting.enums.ShareType;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -20,9 +21,17 @@ import java.util.Date;
 @EqualsAndHashCode(exclude = {"facility", "investor", "underFacility"})
 public class SalePayment implements Cash {
 
+  @GenericGenerator(
+      name = "sale_payment_generator",
+      strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+      parameters = {
+          @org.hibernate.annotations.Parameter(name = "sequence_name", value = "sale_payment_id_seq"),
+          @org.hibernate.annotations.Parameter(name = "increment_size", value = "1"),
+          @org.hibernate.annotations.Parameter(name = "optimizer", value = "hilo")
+      }
+  )
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sale_payment_generator")
-  @SequenceGenerator(name = "sale_payment_generator", sequenceName = "sale_payment_id_seq")
   @Column(name = "id")
   Long id;
 

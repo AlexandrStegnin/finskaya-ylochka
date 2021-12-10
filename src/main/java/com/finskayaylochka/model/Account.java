@@ -4,6 +4,7 @@ import com.finskayaylochka.model.supporting.enums.OwnerType;
 import lombok.Data;
 import lombok.ToString;
 import lombok.EqualsAndHashCode;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.HashSet;
@@ -20,9 +21,17 @@ import java.util.Set;
 @EqualsAndHashCode(of = {"id", "accountNumber"})
 public class Account {
 
+    @GenericGenerator(
+        name = "account_generator",
+        strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+        parameters = {
+            @org.hibernate.annotations.Parameter(name = "sequence_name", value = "account_id_seq"),
+            @org.hibernate.annotations.Parameter(name = "increment_size", value = "1"),
+            @org.hibernate.annotations.Parameter(name = "optimizer", value = "hilo")
+        }
+    )
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "account_generator")
-    @SequenceGenerator(name = "account_generator", sequenceName = "account_id_seq")
     private Long id;
 
     @ManyToOne

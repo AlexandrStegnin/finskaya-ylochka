@@ -4,6 +4,7 @@ import com.finskayaylochka.model.supporting.dto.TokenDTO;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.UUID;
@@ -18,9 +19,17 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AppToken {
 
+    @GenericGenerator(
+        name = "app_token_generator",
+        strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+        parameters = {
+            @org.hibernate.annotations.Parameter(name = "sequence_name", value = "app_token_id_seq"),
+            @org.hibernate.annotations.Parameter(name = "increment_size", value = "1"),
+            @org.hibernate.annotations.Parameter(name = "optimizer", value = "hilo")
+        }
+    )
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "app_token_generator")
-    @SequenceGenerator(name = "app_token_generator", sequenceName = "app_token_id_seq")
     Long id;
 
     @Column(name = "app_name")

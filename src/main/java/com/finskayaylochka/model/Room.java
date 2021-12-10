@@ -3,6 +3,7 @@ package com.finskayaylochka.model;
 import com.finskayaylochka.model.supporting.dto.RoomDTO;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -19,9 +20,17 @@ import java.util.Date;
 @EqualsAndHashCode(exclude = "underFacility")
 public class Room implements Serializable {
 
+    @GenericGenerator(
+        name = "room_generator",
+        strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+        parameters = {
+            @org.hibernate.annotations.Parameter(name = "sequence_name", value = "room_id_seq"),
+            @org.hibernate.annotations.Parameter(name = "increment_size", value = "1"),
+            @org.hibernate.annotations.Parameter(name = "optimizer", value = "hilo")
+        }
+    )
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "room_generator")
-    @SequenceGenerator(name = "room_generator", sequenceName = "room_id_seq")
     Long id;
 
     @Column(name = "name")

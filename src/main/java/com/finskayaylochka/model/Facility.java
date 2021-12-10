@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -29,9 +30,17 @@ public class Facility implements Serializable {
         this.name = name;
     }
 
+    @GenericGenerator(
+        name = "facility_generator",
+        strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+        parameters = {
+            @org.hibernate.annotations.Parameter(name = "sequence_name", value = "facility_id_seq"),
+            @org.hibernate.annotations.Parameter(name = "increment_size", value = "1"),
+            @org.hibernate.annotations.Parameter(name = "optimizer", value = "hilo")
+        }
+    )
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "facility_generator")
-    @SequenceGenerator(name = "facility_generator", sequenceName = "facility_id_seq")
     @Column(name = "id")
     public Long getId() {
         return id;

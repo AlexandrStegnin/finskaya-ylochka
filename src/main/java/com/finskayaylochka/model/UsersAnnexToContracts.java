@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -20,9 +21,17 @@ public class UsersAnnexToContracts implements Serializable {
 
     BigInteger id;
 
+    @GenericGenerator(
+        name = "usersannextocontracts_generator",
+        strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+        parameters = {
+            @org.hibernate.annotations.Parameter(name = "sequence_name", value = "usersannextocontracts_id_seq"),
+            @org.hibernate.annotations.Parameter(name = "increment_size", value = "1"),
+            @org.hibernate.annotations.Parameter(name = "optimizer", value = "hilo")
+        }
+    )
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "usersannextocontracts_generator")
-    @SequenceGenerator(name = "usersannextocontracts_generator", sequenceName = "usersannextocontracts_id_seq")
     public BigInteger getId() {
         return id;
     }

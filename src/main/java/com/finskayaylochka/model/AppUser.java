@@ -12,6 +12,7 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 import org.apache.commons.collections4.CollectionUtils;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -27,9 +28,17 @@ import java.util.Objects;
 @EqualsAndHashCode(of = {"id", "login"})
 public class AppUser implements Serializable {
 
+  @GenericGenerator(
+      name = "app_user_generator",
+      strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+      parameters = {
+          @org.hibernate.annotations.Parameter(name = "sequence_name", value = "app_user_id_seq"),
+          @org.hibernate.annotations.Parameter(name = "increment_size", value = "1"),
+          @org.hibernate.annotations.Parameter(name = "optimizer", value = "hilo")
+      }
+  )
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "app_user_generator")
-  @SequenceGenerator(name = "app_user_generator", sequenceName = "app_user_id_seq")
   Long id;
 
   @Column(name = "login", unique = true, nullable = false, length = 30)

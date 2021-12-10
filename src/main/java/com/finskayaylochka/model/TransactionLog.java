@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -23,9 +24,17 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TransactionLog {
 
+    @GenericGenerator(
+        name = "transaction_log_generator",
+        strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+        parameters = {
+            @org.hibernate.annotations.Parameter(name = "sequence_name", value = "transaction_log_id_seq"),
+            @org.hibernate.annotations.Parameter(name = "increment_size", value = "1"),
+            @org.hibernate.annotations.Parameter(name = "optimizer", value = "hilo")
+        }
+    )
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "transaction_log_generator")
-    @SequenceGenerator(name = "transaction_log_generator", sequenceName = "transaction_log_id_seq")
     @Column(name = "id")
     Long id;
 

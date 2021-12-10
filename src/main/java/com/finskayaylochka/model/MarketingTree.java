@@ -6,6 +6,7 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -18,9 +19,17 @@ import java.util.Date;
 @Table(name = "marketing_tree")
 public class MarketingTree implements Serializable {
 
+    @GenericGenerator(
+        name = "marketing_tree_generator",
+        strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+        parameters = {
+            @org.hibernate.annotations.Parameter(name = "sequence_name", value = "marketing_tree_id_seq"),
+            @org.hibernate.annotations.Parameter(name = "increment_size", value = "1"),
+            @org.hibernate.annotations.Parameter(name = "optimizer", value = "hilo")
+        }
+    )
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "marketing_tree_generator")
-    @SequenceGenerator(name = "marketing_tree_generator", sequenceName = "marketing_tree_id_seq")
     @Column(name = "id")
     Long id;
 

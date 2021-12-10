@@ -2,6 +2,7 @@ package com.finskayaylochka.model;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -17,9 +18,17 @@ public class AnnexToContracts implements Serializable {
     BigInteger id;
     String annexName;
 
+    @GenericGenerator(
+        name = "annextocontracts_generator",
+        strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+        parameters = {
+            @org.hibernate.annotations.Parameter(name = "sequence_name", value = "annextocontracts_id_seq"),
+            @org.hibernate.annotations.Parameter(name = "increment_size", value = "1"),
+            @org.hibernate.annotations.Parameter(name = "optimizer", value = "hilo")
+        }
+    )
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "annextocontracts_generator")
-    @SequenceGenerator(name = "annextocontracts_generator", sequenceName = "annextocontracts_id_seq")
     @Column(name = "Id")
     public BigInteger getId() {
         return id;

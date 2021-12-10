@@ -3,6 +3,7 @@ package com.finskayaylochka.model;
 import com.finskayaylochka.model.supporting.dto.NewCashDetailDTO;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -19,9 +20,17 @@ public class NewCashDetail implements Serializable {
 
     String name;
 
+    @GenericGenerator(
+        name = "new_cash_detail_generator",
+        strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+        parameters = {
+            @org.hibernate.annotations.Parameter(name = "sequence_name", value = "new_cash_detail_id_seq"),
+            @org.hibernate.annotations.Parameter(name = "increment_size", value = "1"),
+            @org.hibernate.annotations.Parameter(name = "optimizer", value = "hilo")
+        }
+    )
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "new_cash_detail_generator")
-    @SequenceGenerator(name = "new_cash_detail_generator", sequenceName = "new_cash_detail_id_seq")
     @Column(name = "id")
     public Long getId() {
         return id;
