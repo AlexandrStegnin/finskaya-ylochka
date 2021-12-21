@@ -31,6 +31,7 @@
         <spring-websocket.version>4.3.9.RELEASE</spring-websocket.version>
         <mapstruct.version>1.4.2.Final</mapstruct.version>
         <lombok.mapstruct.binding.version>0.2.0</lombok.mapstruct.binding.version>
+        <nextcloud.version>12.0.0</nextcloud.version>
     </properties>
 
     <dependencies>
@@ -350,7 +351,14 @@
             <artifactId>lombok-mapstruct-binding</artifactId>
             <version>${lombok.mapstruct.binding.version}</version>
         </dependency>
-        
+
+        <!-- https://mvnrepository.com/artifact/org.aarboard.nextcloud/nextcloud-api -->
+        <dependency>
+            <groupId>org.aarboard.nextcloud</groupId>
+            <artifactId>nextcloud-api</artifactId>
+            <version>${nextcloud.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build>
