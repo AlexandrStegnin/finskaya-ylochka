@@ -15,9 +15,6 @@ import java.util.Date;
 @Table(name = "AnnexToContracts")
 public class AnnexToContracts implements Serializable {
 
-    BigInteger id;
-    String annexName;
-
     @GenericGenerator(
         name = "annextocontracts_generator",
         strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
@@ -30,53 +27,18 @@ public class AnnexToContracts implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "annextocontracts_generator")
     @Column(name = "Id")
-    public BigInteger getId() {
-        return id;
-    }
-
-    public void setId(BigInteger id) {
-        this.id = id;
-    }
+    BigInteger id;
 
     @Column(name = "AnnexName")
-    public String getAnnexName() {
-        return annexName;
-    }
+    String annexName;
 
     @Column(name = "FilePath")
     String filePath;
 
+    @Column(name = "DateLoad")
     Date dateLoad;
 
     @Column(name = "LoadedBy")
     Long loadedBy;
 
-    @Column(name = "DateLoad")
-    public Date getDateLoad() {
-        return dateLoad;
-    }
-
-    public void setDateLoad(Date dateLoad) {
-        this.dateLoad = dateLoad;
-    }
-
-    public Long getLoadedBy() {
-        return loadedBy;
-    }
-
-    public void setLoadedBy(Long loadedBy) {
-        this.loadedBy = loadedBy;
-    }
-
-    public void setAnnexName(String annexName) {
-        this.annexName = annexName;
-    }
-
-    public String getFilePath() {
-        return filePath;
-    }
-
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
-    }
 }

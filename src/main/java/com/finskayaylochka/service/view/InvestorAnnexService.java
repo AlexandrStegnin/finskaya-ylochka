@@ -1,17 +1,27 @@
 package com.finskayaylochka.service.view;
 
+import com.finskayaylochka.config.SecurityUtils;
+import com.finskayaylochka.config.exception.FileUploadException;
+import com.finskayaylochka.config.exception.UsernameNotFoundException;
+import com.finskayaylochka.config.exception.UsernameParseException;
+import com.finskayaylochka.config.property.NextcloudProperty;
 import com.finskayaylochka.model.AnnexToContracts;
 import com.finskayaylochka.model.AppUser;
 import com.finskayaylochka.model.UsersAnnexToContracts;
+import com.finskayaylochka.model.supporting.filters.InvestorAnnexFilter;
 import com.finskayaylochka.model.supporting.view.InvestorAnnex;
 import com.finskayaylochka.repository.view.InvestorAnnexRepository;
-import com.finskayaylochka.service.StatusService;
 import com.finskayaylochka.service.AppUserService;
 import com.finskayaylochka.service.UsersAnnexToContractsService;
 import com.finskayaylochka.specifications.InvestorAnnexSpecification;
-import com.finskayaylochka.config.SecurityUtils;
-import com.finskayaylochka.model.supporting.filters.InvestorAnnexFilter;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.aarboard.nextcloud.api.NextcloudConnector;
+import org.aarboard.nextcloud.api.filesharing.SharePermissions;
+import org.aarboard.nextcloud.api.filesharing.ShareType;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,12 +30,9 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -34,230 +41,123 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class InvestorAnnexService {
 
-    private final InvestorAnnexRepository annexRepository;
+  AppUserService userService;
+  InvestorAnnexRepository annexRepository;
+  InvestorAnnexSpecification specification;
+  UsersAnnexToContractsService usersAnnexToContractsService;
+  NextcloudConnector connector;
+  NextcloudProperty nextcloudProperty;
 
-    private final InvestorAnnexSpecification specification;
+  public List<InvestorAnnex> findAll() {
+    return annexRepository.findAll();
+  }
 
-    private final UsersAnnexToContractsService usersAnnexToContractsService;
+  public List<InvestorAnnex> findAll(InvestorAnnexFilter filters, Pageable pageable) {
+    return annexRepository.findAll(specification.getFilter(filters), pageable).getContent();
+  }
 
-    private final AppUserService appUserService;
+  public List<String> getInvestors() {
+    List<InvestorAnnex> investorAnnexes = annexRepository.findAll();
+    List<String> investors = new ArrayList<>();
+    investors.add("Выберите инвестора");
+    investors.addAll(investorAnnexes
+        .stream()
+        .map(InvestorAnnex::getInvestor)
+        .distinct()
+        .sorted()
+        .collect(Collectors.toList()));
+    return investors;
+  }
 
-    private final StatusService statusService;
-
-    public InvestorAnnexService(InvestorAnnexRepository annexRepository, InvestorAnnexSpecification specification,
-                                UsersAnnexToContractsService usersAnnexToContractsService, AppUserService appUserService,
-                                StatusService statusService) {
-        this.annexRepository = annexRepository;
-        this.specification = specification;
-        this.usersAnnexToContractsService = usersAnnexToContractsService;
-        this.appUserService = appUserService;
-        this.statusService = statusService;
+  public String uploadFiles(MultipartHttpServletRequest request) throws IOException {
+    Iterator<String> itr = request.getFileNames();
+    List<MultipartFile> multipartFiles = new ArrayList<>(0);
+    while (itr.hasNext()) {
+      multipartFiles.add(request.getFile(itr.next()));
     }
+    return uploadFiles(multipartFiles);
+  }
 
-    /**
-     * Получить список всех приложений инвесторов
-     *
-     * @return - список приложений
-     */
-    public List<InvestorAnnex> findAll() {
-        return annexRepository.findAll();
+  public String uploadFiles(List<MultipartFile> files) throws IOException {
+    AppUser currentUser = userService.findByLogin(SecurityUtils.getUsername());
+    for (MultipartFile uploadedFile : files) {
+      checkFile(uploadedFile);
+      Path path = Files.createTempFile("temp-", ".pdf");
+      File file = path.toFile();
+      uploadedFile.transferTo(file);
+      AppUser investor = getInvestor(uploadedFile.getOriginalFilename());
+
+      AnnexToContracts annex = new AnnexToContracts();
+      annex.setAnnexName(uploadedFile.getOriginalFilename());
+      annex.setDateLoad(new Date());
+      annex.setLoadedBy(currentUser.getId());
+
+      UsersAnnexToContracts usersAnnexToContracts = new UsersAnnexToContracts();
+      usersAnnexToContracts.setAnnex(annex);
+      usersAnnexToContracts.setUserId(investor.getId());
+      usersAnnexToContracts.setAnnexRead(0);
+      usersAnnexToContracts.setDateRead(null);
+      usersAnnexToContractsService.create(usersAnnexToContracts);
+
+      uploadFileToNextcloud(file, uploadedFile);
+      Files.delete(path);
     }
+    return "Файлы успешно загружены";
+  }
 
-    /**
-     * Получить список приложений инвесторов с фильтрами и постраничной загрузкой
-     *
-     * @param filters  - фильтр
-     * @param pageable - постраничная загрузка
-     * @return - список приложений
-     */
-    public List<InvestorAnnex> findAll(InvestorAnnexFilter filters, Pageable pageable) {
-        return annexRepository.findAll(specification.getFilter(filters), pageable).getContent();
+  private void checkFile(MultipartFile uploadedFile) {
+    if (uploadedFile.isEmpty()) {
+      String message = String.format("Файл %s пустой", uploadedFile.getOriginalFilename());
+      log.error(message);
+      throw FileUploadException.build400Exception(message);
     }
-
-    /**
-     * Получить список инвесторов, у которых загружены приложения
-     *
-     * @return - список логинов инвесторов
-     */
-    public List<String> getInvestors() {
-        List<InvestorAnnex> investorAnnexes = annexRepository.findAll();
-        List<String> investors = new ArrayList<>();
-        investors.add("Выберите инвестора");
-        investors.addAll(investorAnnexes
-                .stream()
-                .map(InvestorAnnex::getInvestor)
-                .distinct()
-                .sorted()
-                .collect(Collectors.toList()));
-        return investors;
+    if (!uploadedFile.getOriginalFilename().endsWith(".pdf")) {
+      String message = String.format("Файл %s должен быть в формате .PDF", uploadedFile.getOriginalFilename());
+      log.error(message);
+      throw FileUploadException.build400Exception(message);
     }
+  }
 
-    /**
-     * Загрузить файлы
-     *
-     * @param request - запрос, содержащий список файлов
-     * @return - статус загрузки
-     * @throws IOException - если возникла ошибка при работе с файлами
-     * @throws RuntimeException - при ошибке с файлами
-     */
-    public String uploadFiles(MultipartHttpServletRequest request) throws IOException, RuntimeException {
-        Iterator<String> itr = request.getFileNames();
-        List<MultipartFile> multipartFiles = new ArrayList<>(0);
-        while (itr.hasNext()) {
-            multipartFiles.add(request.getFile(itr.next()));
-        }
-        return uploadFiles(multipartFiles);
+  private void uploadFileToNextcloud(File file, MultipartFile uploadedFile) {
+    try {
+      String remoteFolder = nextcloudProperty.getRemoteFolder();
+      connector.uploadFile(file, remoteFolder + uploadedFile.getOriginalFilename());
+      SharePermissions permissions = new SharePermissions(SharePermissions.SingleRight.READ);
+      connector.doShare(remoteFolder + uploadedFile.getOriginalFilename(),
+          ShareType.PUBLIC_LINK, "", false, null, permissions);
+    } catch (Exception e) {
+      throw FileUploadException.build400Exception(e.getMessage());
     }
+  }
 
-    public String uploadFiles(List<MultipartFile> files) throws IOException, RuntimeException {
-        String path = System.getProperty("catalina.home") + "/pdfFiles/";
-        AppUser currentUser = appUserService.findByLogin(SecurityUtils.getUsername());
-//        int counter = 0;
-//        int filesCnt = files.size();
-        for (MultipartFile uploadedFile : files) {
-//            counter++;
-//            statusService.sendStatus(String.format("Загружаем %d из %d файлов", counter, filesCnt));
-            String fileName = uploadedFile.getOriginalFilename();
-            if (uploadedFile.isEmpty()) {
-                String message = "Файл [" + fileName + "] пустой";
-                log.error(message);
-                return message;
-            }
-            if (!fileName.endsWith(".pdf")) {
-                String message = "Файл [" + fileName + "] должен быть в формате .PDF";
-                log.error(message);
-                return message;
-            }
-            File file = new File(path + fileName);
-            if (file.exists()) {
-                String message = "Файл [" + fileName + "] уже существует";
-                log.error(message);
-                continue;
-            }
-            AppUser investor;
-            try {
-                investor = getInvestor(fileName);
-            } catch (RuntimeException e) {
-                return e.getMessage();
-            }
-            File dir = new File(path);
-            if (!dir.exists()) {
-                dir.mkdirs();
-            }
-            AnnexToContracts annex = new AnnexToContracts();
-            annex.setAnnexName(fileName);
-            annex.setDateLoad(new Date());
-            annex.setLoadedBy(currentUser.getId());
-            annex.setFilePath(path);
-
-            UsersAnnexToContracts usersAnnexToContracts = new UsersAnnexToContracts();
-            usersAnnexToContracts.setAnnex(annex);
-            usersAnnexToContracts.setUserId(investor.getId());
-            usersAnnexToContracts.setAnnexRead(0);
-            usersAnnexToContracts.setDateRead(null);
-            usersAnnexToContractsService.create(usersAnnexToContracts);
-            uploadedFile.transferTo(file);
-        }
-//        statusService.sendStatus("OK");
-        return "Файлы успешно загружены";
+  private AppUser getInvestor(String fileName) {
+    String investorCode = fileName.substring(0, 3);
+    if (StringUtils.isBlank(investorCode) || !StringUtils.isNumeric(investorCode)) {
+      throw UsernameParseException.build400Exception(String.format("Ошибка получения логина инвестора из имени файла %s", fileName));
     }
-
-    /**
-     * Получить пользователя по имени файла
-     *
-     * @param fileName- имя файла
-     * @return - пользователь
-     * @throws RuntimeException - если пользователь не найден или название файла не позволило прочитать логин
-     */
-    private AppUser getInvestor(String fileName) throws RuntimeException {
-        String lastName = "";
-        Pattern pattern = Pattern.compile("Инвестор\\s\\d{3,}", Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(fileName);
-        if (matcher.find()) {
-            lastName = matcher.group(0);
-        }
-        String login;
-        String[] parts = lastName.split("\\s");
-        if (parts.length == 2) {
-            login = "investor" + parts[1];
-        } else {
-            throw new RuntimeException("Ошибка получения логина инвестора из имени файла [" + fileName + "]");
-        }
-        AppUser investor = appUserService.findByLogin(login);
-        if (null == investor) {
-            throw new RuntimeException("Пользователь с логином [" + lastName + "] не найден");
-        }
-        return investor;
+    String login = "investor".concat(investorCode);
+    AppUser investor = userService.findByLogin(login);
+    if (Objects.isNull(investor)) {
+      throw UsernameNotFoundException.build404Exception(String.format("Пользователь с логином %s не найден", login));
     }
+    return investor;
+  }
 
-    /**
-     * Удалить приложение по id
-     *
-     * @param annexId - id приложения
-     * @return - статус операции
-     */
-    public String deleteAnnex(BigInteger annexId) {
-        UsersAnnexToContracts annex = usersAnnexToContractsService.findById(annexId);
-        if (null == annex) {
-            return String.format("Приложение с id = [%d] не найдено", annexId);
-        }
-        String fileName = annex.getAnnex().getAnnexName();
-        String path = annex.getAnnex().getFilePath();
-        if (null == path) {
-            return String.format("Файл с id = [%d] не найден на файловой системе", annexId);
-        }
-        File file = new File(path + fileName);
-        usersAnnexToContractsService.deleteById(annexId);
-        if (!file.exists()) {
-            return String.format("Файл [%s] не найден на файловой системе", annex.getAnnex().getAnnexName());
-        }
-        boolean deleted = file.delete();
-        String success = deleted ? "успешно" : "не";
-        return String.format("Приложение к договору [%s] %s удалено", annex.getAnnex().getAnnexName(), success);
-    }
+  public void delete(BigInteger id) {
+    usersAnnexToContractsService.deleteById(id);
+  }
 
-    /**
-     * Удалить приложения по списку id
-     *
-     * @param annexIdList - id приложения
-     * @return - статус операции
-     */
-    public String deleteAnnexex(List<BigInteger> annexIdList) {
-        final int[] deletedCount = {0};
-        final int[] noDeletedCount = {0};
-        StringBuilder messageBuilder = new StringBuilder();
-        annexIdList.forEach(annexId -> {
-            UsersAnnexToContracts annex = usersAnnexToContractsService.findById(annexId);
-            if (null == annex) {
-                noDeletedCount[0]++;
-                return;
-            }
-            String fileName = annex.getAnnex().getAnnexName();
-            String path = annex.getAnnex().getFilePath();
-            if (null == path) {
-                noDeletedCount[0]++;
-                return;
-            }
-            File file = new File(path + fileName);
-            usersAnnexToContractsService.deleteById(annexId);
-            if (!file.exists()) {
-                noDeletedCount[0]++;
-                return;
-            }
-            boolean deleted = file.delete();
-            if (deleted) {
-                deletedCount[0]++;
-            } else {
-                noDeletedCount[0]++;
-            }
-        });
-        messageBuilder.append(String.format("Успешно удалены [%d шт]", deletedCount[0]));
-        if (noDeletedCount[0] > 0) {
-            messageBuilder.append("\n").append(String.format("НЕ удалены [%d шт]", noDeletedCount[0]));
-        }
-        return messageBuilder.toString();
-    }
+  public void deleteList(List<BigInteger> ids) {
+    String remoteFolder = nextcloudProperty.getRemoteFolder();
+    ids.forEach(id -> {
+      UsersAnnexToContracts annex = usersAnnexToContractsService.findById(id);
+      connector.removeFile(remoteFolder + annex.getAnnex().getAnnexName());
+      delete(id);
+    });
+  }
 
 }

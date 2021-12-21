@@ -1,19 +1,30 @@
 package com.finskayaylochka.controllers;
 
-import com.finskayaylochka.model.AppUser;
-import com.finskayaylochka.model.UsersAnnexToContracts;
-import com.finskayaylochka.model.supporting.GenericResponse;
-import com.finskayaylochka.model.supporting.view.InvestorAnnex;
 import com.finskayaylochka.config.SecurityUtils;
 import com.finskayaylochka.config.application.Location;
+import com.finskayaylochka.config.exception.AnnexNotFoundException;
+import com.finskayaylochka.config.exception.UsernameNotFoundException;
+import com.finskayaylochka.model.AppUser;
+import com.finskayaylochka.model.UsersAnnexToContracts;
+import com.finskayaylochka.model.supporting.ApiResponse;
+import com.finskayaylochka.model.supporting.GenericResponse;
 import com.finskayaylochka.model.supporting.filters.InvestorAnnexFilter;
 import com.finskayaylochka.model.supporting.model.AnnexModel;
+import com.finskayaylochka.model.supporting.view.InvestorAnnex;
 import com.finskayaylochka.service.AppUserService;
 import com.finskayaylochka.service.UsersAnnexToContractsService;
 import com.finskayaylochka.service.view.InvestorAnnexService;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import org.aarboard.nextcloud.api.NextcloudConnector;
+import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.util.FileCopyUtils;
@@ -25,116 +36,114 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.Objects;
+
 
 /**
  * @author Alexandr Stegnin
  */
-
 @Controller
+@Slf4j
+@RequiredArgsConstructor
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class AnnexController {
 
-    private final InvestorAnnexService annexService;
+  InvestorAnnexService annexService;
+  InvestorAnnexFilter filter = new InvestorAnnexFilter();
+  AppUserService userService;
+  UsersAnnexToContractsService usersAnnexToContractsService;
+  NextcloudConnector connector;
+  Environment env;
 
-    private final InvestorAnnexFilter filter;
+  @GetMapping(path = Location.INVESTOR_ANNEXES)
+  public String getAnnexes(@PageableDefault(size = 100) @SortDefault Pageable pageable, ModelMap model) {
+    prepareModel(model, filter, pageable);
+    return "annex-list";
+  }
 
-    private final AppUserService appUserService;
+  @PostMapping(path = Location.INVESTOR_ANNEXES)
+  public String getAnnexesFiltered(@PageableDefault(size = 100) @SortDefault Pageable pageable, ModelMap model,
+                                   @ModelAttribute("filter") InvestorAnnexFilter filter) {
+    prepareModel(model, filter, pageable);
+    return "annex-list";
+  }
 
-    private final UsersAnnexToContractsService usersAnnexToContractsService;
+  @PostMapping(path = Location.INVESTOR_ANNEXES_UPLOAD)
+  public @ResponseBody
+  GenericResponse uploadAnnexes(MultipartHttpServletRequest request) {
+    GenericResponse response = new GenericResponse();
+    try {
+      String message = annexService.uploadFiles(request);
+      response.setMessage(message);
+    } catch (RuntimeException | IOException e) {
+      response.setError(e.getMessage());
+    }
+    return response;
+  }
 
-    public AnnexController(InvestorAnnexService annexService, AppUserService appUserService,
-                           UsersAnnexToContractsService usersAnnexToContractsService) {
-        this.annexService = annexService;
-        this.appUserService = appUserService;
-        this.usersAnnexToContractsService = usersAnnexToContractsService;
-        this.filter = new InvestorAnnexFilter();
+  @ResponseBody
+  @PostMapping(path = Location.INVESTOR_ANNEXES_DELETE_LIST)
+  public ApiResponse deleteAnnexesList(@RequestBody AnnexModel annex) {
+    annexService.deleteList(annex.getAnnexIdList());
+    return ApiResponse.builder()
+        .message("Записи удалены")
+        .status(HttpStatus.BAD_REQUEST.value())
+        .build();
+  }
+
+  @RequestMapping("/annexes/{annexId}")
+  public void getFile(HttpServletResponse response, @PathVariable BigInteger annexId) throws IOException {
+    AppUser currentUser = userService.findByLogin(SecurityUtils.getUsername());
+    if (Objects.isNull(currentUser)) {
+      throw UsernameNotFoundException.build404Exception("Пользователь не найден");
+    }
+    UsersAnnexToContracts annex = usersAnnexToContractsService.findById(annexId);
+    if (Objects.isNull(annex)) {
+      throw AnnexNotFoundException.build404Exception("Приложение не найдено");
+    }
+    if (!annex.getUserId().equals(SecurityUtils.getUserId())) {
+      throw new SecurityException("Доступ к файлу запрещён");
     }
 
-    @GetMapping(path = Location.INVESTOR_ANNEXES)
-    public String getAnnexes(@PageableDefault(size = 100) @SortDefault Pageable pageable, ModelMap model) {
-        prepareModel(model, filter, pageable);
-        return "annex-list";
+    Path path = Files.createTempFile("temp-", ".pdf");
+
+    boolean transferred = connector.downloadFile(getPath(annex), path.getParent().toAbsolutePath() + File.separator);
+    if (!transferred) {
+      log.error("Error get file {}", annex.getAnnex().getAnnexName());
     }
-
-    @PostMapping(path = Location.INVESTOR_ANNEXES)
-    public String getAnnexesFiltered(@PageableDefault(size = 100) @SortDefault Pageable pageable, ModelMap model,
-                                     @ModelAttribute("filter") InvestorAnnexFilter filter) {
-        prepareModel(model, filter, pageable);
-        return "annex-list";
+    File file = new File(path.getParent() + File.separator + annex.getAnnex().getAnnexName());
+    try (FileInputStream inputStream = new FileInputStream(file)) {
+      response.setContentType(MediaType.APPLICATION_PDF_VALUE);
+      response.setContentLength((int) file.length());
+      response.setHeader("Content-Disposition", "inline;filename=\"" + file.getName() + "\"");
+      FileCopyUtils.copy(inputStream, response.getOutputStream());
     }
-
-    @PostMapping(path = Location.INVESTOR_ANNEXES_UPLOAD)
-    public @ResponseBody
-    GenericResponse uploadAnnexes(MultipartHttpServletRequest request) {
-        GenericResponse response = new GenericResponse();
-        try {
-            String message = annexService.uploadFiles(request);
-            response.setMessage(message);
-        } catch (RuntimeException | IOException e) {
-            response.setError(e.getMessage());
-        }
-        return response;
+    boolean deleted = Files.deleteIfExists(file.toPath());
+    if (!deleted) {
+      log.debug("Can't delete file {}", file.getName());
     }
-
-    @PostMapping(path = Location.INVESTOR_ANNEXES_DELETE)
-    public @ResponseBody
-    GenericResponse deleteAnnexes(@RequestBody UsersAnnexToContracts annex) {
-        GenericResponse response = new GenericResponse();
-        if (null == annex.getId()) {
-            response.setError("ID должен быть указан");
-            return response;
-        }
-        String message = annexService.deleteAnnex(annex.getId());
-        response.setMessage(message);
-        return response;
+    deleted = Files.deleteIfExists(path);
+    if (!deleted) {
+      log.debug("Can't delete file {}", path.toFile().getName());
     }
+  }
 
-    @PostMapping(path = Location.INVESTOR_ANNEXES_DELETE_LIST)
-    public @ResponseBody
-    GenericResponse deleteAnnexesList(@RequestBody AnnexModel annex) {
-        GenericResponse response = new GenericResponse();
-        if (null == annex || annex.getAnnexIdList().size() == 0) {
-            response.setError("Список ID должен быть указан");
-            return response;
-        }
-        String message = annexService.deleteAnnexex(annex.getAnnexIdList());
-        response.setMessage(message);
-        return response;
-    }
+  private void prepareModel(ModelMap model, InvestorAnnexFilter filter, Pageable pageable) {
+    String path = System.getProperty("catalina.home") + "/pdfFiles/";
+    File file = new File(path);
+    List<InvestorAnnex> contracts = annexService.findAll(filter, pageable);
+    List<String> logins = annexService.getInvestors();
+    model.addAttribute("files", file.listFiles());
+    model.addAttribute("contracts", contracts);
+    model.addAttribute("investors", logins);
+    model.addAttribute("filter", filter);
+  }
 
-    @RequestMapping("/annexes/{annexId}")
-    public void getFile(HttpServletResponse response, @PathVariable BigInteger annexId) throws IOException {
-        AppUser currentUser = appUserService.findByLogin(SecurityUtils.getUsername());
-        if (null == currentUser) {
-            throw new SecurityException("Пользователь не найден");
-        }
-        UsersAnnexToContracts annex = usersAnnexToContractsService.findById(annexId);
-        if (annex == null) {
-            throw new RuntimeException("Приложение не найдено");
-        }
-        if (!annex.getUserId().equals(SecurityUtils.getUserId())) {
-            throw new SecurityException("Доступ к файлу запрещён");
-        }
-        String path = annex.getAnnex().getFilePath() + annex.getAnnex().getAnnexName();
-        File file = new File(path);
-        FileInputStream inputStream = new FileInputStream(file);
-
-        response.setContentType("application/pdf");
-        response.setContentLength((int) file.length());
-        response.setHeader("Content-Disposition", "inline;filename=\"" + annex.getAnnex().getAnnexName() + "\"");
-        FileCopyUtils.copy(inputStream, response.getOutputStream());
-
-    }
-
-    private void prepareModel(ModelMap model, InvestorAnnexFilter filter, Pageable pageable) {
-        String path = System.getProperty("catalina.home") + "/pdfFiles/";
-        File file = new File(path);
-        List<InvestorAnnex> contracts = annexService.findAll(filter, pageable);
-        List<String> logins = annexService.getInvestors();
-        model.addAttribute("files", file.listFiles());
-        model.addAttribute("contracts", contracts);
-        model.addAttribute("investors", logins);
-        model.addAttribute("filter", filter);
-    }
+  private String getPath(UsersAnnexToContracts attachment) {
+    return File.separator + env.getProperty("nextcloud.folder") + File.separator + attachment.getAnnex().getAnnexName();
+  }
 
 }
