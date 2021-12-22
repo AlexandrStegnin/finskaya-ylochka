@@ -1,5 +1,6 @@
 package com.finskayaylochka.controllers;
 
+import com.finskayaylochka.config.application.Location;
 import com.finskayaylochka.func.UploadExcelService;
 import com.finskayaylochka.model.AppUser;
 import com.finskayaylochka.model.Facility;
@@ -13,9 +14,11 @@ import com.finskayaylochka.model.supporting.dto.SalePaymentDivideDTO;
 import com.finskayaylochka.model.supporting.enums.AppPage;
 import com.finskayaylochka.model.supporting.enums.ShareType;
 import com.finskayaylochka.model.supporting.enums.UploadType;
-import com.finskayaylochka.config.application.Location;
 import com.finskayaylochka.model.supporting.filters.SalePaymentFilter;
 import com.finskayaylochka.service.*;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -35,143 +38,94 @@ import java.util.Date;
 import java.util.List;
 
 @Controller
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class SalePaymentController {
 
-    private final UploadExcelService uploadExcelService;
+  final UploadExcelService uploadExcelService;
+  final FacilityService facilityService;
+  final SalePaymentService salePaymentService;
+  final UnderFacilityService underFacilityService;
+  final AppUserService appUserService;
+  final AppFilterService appFilterService;
+  SalePaymentFilter filter = new SalePaymentFilter();
 
-    private final FacilityService facilityService;
+  @GetMapping(path = Location.SALE_PAYMENTS)
+  public ModelAndView paymentsSale(@PageableDefault(size = 100) @SortDefault Pageable pageable) {
+    filter = (SalePaymentFilter) appFilterService.getFilter(filter, SalePaymentFilter.class, AppPage.SALE_PAYMENTS);
+    return prepareModel(filter);
+  }
 
-    private final SalePaymentService salePaymentService;
+  @PostMapping(path = Location.SALE_PAYMENTS)
+  public ModelAndView paymentsSaleFiltered(@ModelAttribute("filter") SalePaymentFilter filter) {
+    appFilterService.updateFilter(filter, AppPage.SALE_PAYMENTS);
+    return prepareModel(filter);
+  }
 
-    private final UnderFacilityService underFacilityService;
+  @PostMapping(path = Location.SALE_PAYMENTS_UPLOAD)
+  @ResponseBody
+  public ApiResponse uploadSalePayments(MultipartHttpServletRequest request) {
+    HttpSession session = request.getSession(true);
+    session.setMaxInactiveInterval(10 * 60);
+    return uploadExcelService.upload(request, UploadType.SALE);
+  }
 
-    private final AppUserService appUserService;
+  @PostMapping(path = Location.SALE_PAYMENTS_DELETE_CHECKED)
+  @ResponseBody
+  public ApiResponse deleteSalePaymentsChecked(@RequestBody SalePaymentDTO dto) {
+    return salePaymentService.deleteChecked(dto);
+  }
 
-    private SalePaymentFilter filter = new SalePaymentFilter();
+  @PostMapping(path = Location.SALE_PAYMENTS_REINVEST)
+  @ResponseBody
+  public ApiResponse reinvestSalePayments(@RequestBody SalePaymentDTO dto) {
+    return salePaymentService.reinvest(dto);
+  }
 
-    private final AppFilterService appFilterService;
+  @PostMapping(path = Location.SALE_PAYMENTS_DIVIDE)
+  public @ResponseBody
+  ApiResponse divideSalePayments(@RequestBody SalePaymentDivideDTO divideDTO) {
+    return salePaymentService.divideSalePayment(divideDTO);
+  }
 
-    public SalePaymentController(UploadExcelService uploadExcelService, FacilityService facilityService,
-                                 SalePaymentService salePaymentService, UnderFacilityService underFacilityService,
-                                 AppUserService appUserService, AppFilterService appFilterService) {
-        this.uploadExcelService = uploadExcelService;
-        this.facilityService = facilityService;
-        this.salePaymentService = salePaymentService;
-        this.underFacilityService = underFacilityService;
-        this.appUserService = appUserService;
-        this.appFilterService = appFilterService;
-    }
+  private ModelAndView prepareModel(SalePaymentFilter filters) {
+    ModelAndView model = new ModelAndView("sale-payment-list");
+    FileBucket fileModel = new FileBucket();
+    Pageable pageable = new PageRequest(filters.getPageNumber(), filters.getPageSize());
+    Page<SalePayment> page = salePaymentService.findAll(filters, pageable);
+    model.addObject("page", page);
+    model.addObject("fileBucket", fileModel);
+    model.addObject("filter", filters);
+    model.addObject("searchSummary", new SearchSummary());
+    model.addObject("salePaymentDTO", new SalePaymentDTO());
+    return model;
+  }
 
-    /**
-     * Получить страницу для отображения списка денег инвесторов с продажи
-     *
-     * @param pageable для постраничного отображения
-     * @return страница
-     */
-    @GetMapping(path = Location.SALE_PAYMENTS)
-    public ModelAndView paymentsSale(@PageableDefault(size = 100) @SortDefault Pageable pageable) {
-        filter = (SalePaymentFilter) appFilterService.getFilter(filter, SalePaymentFilter.class, AppPage.SALE_PAYMENTS);
-        return prepareModel(filter);
-    }
+  @ModelAttribute("facilities")
+  public List<Facility> initializeFacilities() {
+    return facilityService.initializeFacilities();
+  }
 
-    /**
-     * Получить страницу для отображения списка денег инвесторов с продажи с фильтрами
-     *
-     * @param filter фильтры
-     * @return страница
-     */
-    @PostMapping(path = Location.SALE_PAYMENTS)
-    public ModelAndView paymentsSaleFiltered(@ModelAttribute("filter") SalePaymentFilter filter) {
-        appFilterService.updateFilter(filter, AppPage.SALE_PAYMENTS);
-        return prepareModel(filter);
-    }
+  @ModelAttribute("underFacilities")
+  public List<UnderFacility> initializeUnderFacilities() {
+    return underFacilityService.initializeUnderFacilities();
+  }
 
-    /**
-     * Загрузить файл выплат по продаже
-     *
-     * @param request запрос
-     * @return сообщение об успешной/неудачной загрузке
-     */
-    @PostMapping(path = Location.SALE_PAYMENTS_UPLOAD)
-    @ResponseBody
-    public ApiResponse uploadSalePayments(MultipartHttpServletRequest request) {
-        HttpSession session = request.getSession(true);
-        session.setMaxInactiveInterval(10 * 60);
-        return uploadExcelService.upload(request, UploadType.SALE);
-    }
+  @ModelAttribute("investors")
+  public List<AppUser> initializeInvestors() {
+    return appUserService.initializeInvestors();
+  }
 
-    /**
-     * Удалить выбранные данные о выплатах (аренда)
-     *
-     * @return сообщение об успешном/неудачном выполнении
-     */
-    @PostMapping(path = Location.SALE_PAYMENTS_DELETE_CHECKED)
-    @ResponseBody
-    public ApiResponse deleteSalePaymentsChecked(@RequestBody SalePaymentDTO dto) {
-        return salePaymentService.deleteChecked(dto);
-    }
+  @ModelAttribute("shareTypes")
+  public List<ShareType> initializeShareTypes() {
+    return Arrays.asList(ShareType.values());
+  }
 
-    /**
-     * Реинвестирование сумм с выплат (продажа)
-     *
-     * @param dto DTO для реинвестирования
-     * @return ответ о выполнении
-     */
-    @PostMapping(path = Location.SALE_PAYMENTS_REINVEST)
-    @ResponseBody
-    public ApiResponse reinvestSalePayments(@RequestBody SalePaymentDTO dto) {
-        return salePaymentService.reinvest(dto);
-    }
-
-    @PostMapping(path = Location.SALE_PAYMENTS_DIVIDE)
-    public @ResponseBody
-    ApiResponse divideSalePayments(@RequestBody SalePaymentDivideDTO divideDTO) {
-        return salePaymentService.divideSalePayment(divideDTO);
-    }
-
-    /**
-     * Подготовить модель для страницы
-     *
-     * @param filters фильтры
-     */
-    private ModelAndView prepareModel(SalePaymentFilter filters) {
-        ModelAndView model = new ModelAndView("sale-payment-list");
-        FileBucket fileModel = new FileBucket();
-        Pageable pageable = new PageRequest(filters.getPageNumber(), filters.getPageSize());
-        Page<SalePayment> page = salePaymentService.findAll(filters, pageable);
-        model.addObject("page", page);
-        model.addObject("fileBucket", fileModel);
-        model.addObject("filter", filters);
-        model.addObject("searchSummary", new SearchSummary());
-        model.addObject("salePaymentDTO", new SalePaymentDTO());
-        return model;
-    }
-
-    @ModelAttribute("facilities")
-    public List<Facility> initializeFacilities() {
-        return facilityService.initializeFacilities();
-    }
-
-    @ModelAttribute("underFacilities")
-    public List<UnderFacility> initializeUnderFacilities() {
-        return underFacilityService.initializeUnderFacilities();
-    }
-
-    @ModelAttribute("investors")
-    public List<AppUser> initializeInvestors() {
-        return appUserService.initializeInvestors();
-    }
-
-    @ModelAttribute("shareTypes")
-    public List<ShareType> initializeShareTypes() {
-        return Arrays.asList(ShareType.values());
-    }
-
-    @InitBinder
-    public void initBinder(WebDataBinder webDataBinder) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        dateFormat.setLenient(false);
-        webDataBinder.registerCustomEditor(Date.class, new CustomDateEditor(dateFormat, true));
-    }
+  @InitBinder
+  public void initBinder(WebDataBinder webDataBinder) {
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    dateFormat.setLenient(false);
+    webDataBinder.registerCustomEditor(Date.class, new CustomDateEditor(dateFormat, true));
+  }
 
 }
