@@ -90,7 +90,7 @@ public class AnnexController {
     annexService.deleteList(annex.getAnnexIdList());
     return ApiResponse.builder()
         .message("Записи удалены")
-        .status(HttpStatus.BAD_REQUEST.value())
+        .status(HttpStatus.OK.value())
         .build();
   }
 
