@@ -32,4 +32,8 @@ public class ApiResponse {
         this.status = status;
     }
 
+    public static ApiResponse build422Response(String message) {
+        return new ApiResponse(message, HttpStatus.PRECONDITION_FAILED.value());
+    }
+
 }

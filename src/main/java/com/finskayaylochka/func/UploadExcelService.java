@@ -123,8 +123,7 @@ public class UploadExcelService {
         try {
           calendar.setTime(FORMAT.parse(row.getCell(4).getDateCellValue().toString()));
         } catch (Exception ex) {
-          return new ApiResponse(String.format("Не удачная попытка конвертировать строку в дату. Строка %d, столбец 5", cel),
-              HttpStatus.PRECONDITION_FAILED.value());
+          return ApiResponse.build422Response(String.format("Не удачная попытка конвертировать строку в дату. Строка %d, столбец 5", cel));
         }
 
         java.time.LocalDate cal = calendar.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
@@ -141,8 +140,7 @@ public class UploadExcelService {
               break;
           }
         } catch (Exception ex) {
-          return new ApiResponse(String.format("Неудачная попытка конвертировать строку в дату. Строка %d, столбец 9", cel),
-              HttpStatus.PRECONDITION_FAILED.value());
+          return ApiResponse.build422Response(String.format("Неудачная попытка конвертировать строку в дату. Строка %d, столбец 9", cel));
         }
 
         java.time.LocalDate calSale = dateSale.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
@@ -170,8 +168,7 @@ public class UploadExcelService {
 
         String login = row.getCell(1).getStringCellValue();
         if (Objects.isNull(login) || login.isEmpty()) {
-          return new ApiResponse(String.format("Не указан инвестор! Строка %d, столбец 2", cel),
-              HttpStatus.PRECONDITION_FAILED.value());
+          return ApiResponse.build422Response(String.format("Не указан инвестор! Строка %d, столбец 2", cel));
         }
 
         AppUser user = users.stream()
@@ -180,30 +177,26 @@ public class UploadExcelService {
             .orElse(null);
 
         if (Objects.isNull(user)) {
-          return new ApiResponse(String.format("Неудачная попытка найти пользователя \"%s\". Строка %d, столбец 2", login, cel),
-              HttpStatus.PRECONDITION_FAILED.value());
+          return ApiResponse.build422Response(String.format("Неудачная попытка найти пользователя \"%s\". Строка %d, столбец 2", login, cel));
         }
 
         String facilityName = row.getCell(0).getStringCellValue();
         if (Objects.isNull(facilityName) || facilityName.isEmpty()) {
-          return new ApiResponse(String.format("Не указан объект! Строка %d, столбец 1", cel),
-              HttpStatus.PRECONDITION_FAILED.value());
+          return ApiResponse.build422Response(String.format("Не указан объект! Строка %d, столбец 1", cel));
         }
 
         Facility facility = facilities.get(facilityName);
         if (Objects.isNull(facility)) {
           facility = facilityService.findByName(facilityName);
           if (Objects.isNull(facility)) {
-            return new ApiResponse(String.format("Не указан или не верно указан объект \"%s\". Строка %d, столбец 1", facilityName, cel),
-                HttpStatus.PRECONDITION_FAILED.value());
+            return ApiResponse.build422Response(String.format("Не указан или не верно указан объект \"%s\". Строка %d, столбец 1", facilityName, cel));
           }
         }
         facilities.putIfAbsent(facilityName, facility);
 
         String share = row.getCell(2).getStringCellValue();
         if (Objects.isNull(share)) {
-          return new ApiResponse(String.format("Не указана доля. Строка %d, столбец 3", cel),
-              HttpStatus.PRECONDITION_FAILED.value());
+          return ApiResponse.build422Response(String.format("Не указана доля. Строка %d, столбец 3", cel));
         }
         ShareType shareType = shareKinds
             .stream()
@@ -212,8 +205,7 @@ public class UploadExcelService {
             .orElse(null);
 
         if (Objects.isNull(shareType)) {
-          return new ApiResponse(String.format("Не указана или не верно указана доля \"%s\". Строка %d, столбец 3", share, cel),
-              HttpStatus.PRECONDITION_FAILED.value());
+          return ApiResponse.build422Response(String.format("Не указана или не верно указана доля \"%s\". Строка %d, столбец 3", share, cel));
         }
 
         String strCashInFacility = row.getCell(3).getStringCellValue();
@@ -221,8 +213,7 @@ public class UploadExcelService {
         try {
           cashInFacility = new BigDecimal(strCashInFacility);
         } catch (NumberFormatException ex) {
-          return new ApiResponse(String.format("Ошибка преобразования суммы \"Вложено в объект\". Строка %d, столбец 4", cel),
-              HttpStatus.PRECONDITION_FAILED.value());
+          return ApiResponse.build422Response(String.format("Ошибка преобразования суммы \"Вложено в объект\". Строка %d, столбец 4", cel));
         }
 
         String strCashInUnderFacility = row.getCell(5).getStringCellValue();
@@ -230,8 +221,7 @@ public class UploadExcelService {
         try {
           cashInUnderFacility = new BigDecimal(strCashInUnderFacility);
         } catch (NumberFormatException ex) {
-          return new ApiResponse(String.format("Ошибка преобразования суммы \"Вложено в подобъект\". Строка %d, столбец 6", cel),
-              HttpStatus.PRECONDITION_FAILED.value());
+          return ApiResponse.build422Response(String.format("Ошибка преобразования суммы \"Вложено в подобъект\". Строка %d, столбец 6", cel));
         }
 
         String strProfitToReinvest = row.getCell(6).getStringCellValue();
@@ -239,21 +229,18 @@ public class UploadExcelService {
         try {
           profitToReinvest = new BigDecimal(strProfitToReinvest).setScale(2, RoundingMode.HALF_UP);
         } catch (NumberFormatException ex) {
-          return new ApiResponse(String.format("Ошибка преобразования суммы \"Сколько прибыли реинвест\". Строка %d, столбец 7", cel),
-              HttpStatus.PRECONDITION_FAILED.value());
+          return ApiResponse.build422Response(String.format("Ошибка преобразования суммы \"Сколько прибыли реинвест\". Строка %d, столбец 7", cel));
         }
 
         String underFacilityName = row.getCell(7).getStringCellValue();
         if (Objects.isNull(underFacilityName) || underFacilityName.isEmpty()) {
-          return new ApiResponse(String.format("Не указан или не верно указан подобъект \"%s\". Строка %d, столбец 8", underFacilityName, cel),
-              HttpStatus.PRECONDITION_FAILED.value());
+          return ApiResponse.build422Response(String.format("Не указан или не верно указан подобъект \"%s\". Строка %d, столбец 8", underFacilityName, cel));
         }
         UnderFacility underFacility = underFacilities.get(underFacilityName);
         if (Objects.isNull(underFacility)) {
           underFacility = underFacilityService.findByName(underFacilityName);
           if (Objects.isNull(underFacility)) {
-            return new ApiResponse(String.format("Не указан или не верно указан подобъект \"%s\". Строка %d, столбец 8", underFacilityName, cel),
-                HttpStatus.PRECONDITION_FAILED.value());
+            return ApiResponse.build422Response(String.format("Не указан или не верно указан подобъект \"%s\". Строка %d, столбец 8", underFacilityName, cel));
           }
         }
         underFacilities.putIfAbsent(underFacilityName, underFacility);
@@ -272,21 +259,12 @@ public class UploadExcelService {
             .build();
 
         List<SalePayment> flowsSaleList = salePayments.stream()
-            .filter(flows -> globalFunctions.getMonthInt(flows.getDateSale()) ==
-                globalFunctions.getMonthInt(salePayment.getDateSale()) &&
-                globalFunctions.getYearInt(flows.getDateSale()) ==
-                    globalFunctions.getYearInt(salePayment.getDateSale()) &&
-                globalFunctions.getDayInt(flows.getDateSale()) ==
-                    globalFunctions.getDayInt(salePayment.getDateSale()))
-
-            .filter(flows -> Objects.nonNull(flows.getFacility()) &&
-                flows.getFacility().getId().equals(salePayment.getFacility().getId()))
-
-            .filter(flows -> Objects.nonNull(salePayment.getUnderFacility()) &&
-                flows.getUnderFacility().getId().equals(salePayment.getUnderFacility().getId()))
-
-            .filter(flows -> flows.getInvestor().getId().equals(salePayment.getInvestor().getId()))
-
+            .filter(flows -> flows.getDateSale().equals(salePayment.getDateSale()))
+            .filter(flows -> Objects.nonNull(flows.getFacility()))
+            .filter(flows -> Objects.equals(flows.getFacility().getId(), salePayment.getFacility().getId()))
+            .filter(flows -> Objects.nonNull(salePayment.getUnderFacility()))
+            .filter(flows -> Objects.equals(flows.getUnderFacility().getId(), salePayment.getUnderFacility().getId()))
+            .filter(flows -> Objects.equals(flows.getInvestor().getId(), salePayment.getInvestor().getId()))
             .collect(Collectors.toList());
 
         if (flowsSaleList.isEmpty()) {
