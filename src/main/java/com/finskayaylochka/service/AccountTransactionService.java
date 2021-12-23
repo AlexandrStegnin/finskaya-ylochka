@@ -178,10 +178,33 @@ public class AccountTransactionService {
             HttpStatus.BAD_REQUEST);
       }
       rollbackResale(dto);
+    } else if (cashTypes.contains(CashType.SALE_CASH)) {
+      rollbackSales(dto);
     } else {
       rollbackOther(dto);
     }
     return new ApiResponse("Данные успешно удалены");
+  }
+
+  private void rollbackSales(AccountTxDTO dto) {
+    Set<AccountTransaction> transactions = new HashSet<>();
+    try {
+      dto.getTxIds().forEach(id -> {
+        AccountTransaction transaction = findParent(id);
+        if (transaction != null) {
+          transactions.add(transaction);
+        }
+      });
+      transactions.forEach(transaction -> {
+        List<AccountTransaction> allTx = new ArrayList<>(getAllChild(transaction));
+        allTx.add(transaction);
+        releaseMonies(allTx);
+        deleteSalePayments(allTx);
+        deleteByParent(transaction);
+      });
+    } catch (Exception e) {
+      throw new ApiException(e.getLocalizedMessage(), HttpStatus.BAD_REQUEST);
+    }
   }
 
   public void rollbackOther(AccountTxDTO dto) {
@@ -259,10 +282,8 @@ public class AccountTransactionService {
         .filter(Objects::nonNull)
         .forEach(money -> {
           NewCashDetail newCashDetail = money.getNewCashDetail();
-          if (Objects.nonNull(newCashDetail)) {
-            if (newCashDetail.getName().equalsIgnoreCase(NEW_CASH_DETAIL_REINVEST)) {
-              toDelete.add(money);
-            }
+          if (Objects.nonNull(newCashDetail) && (newCashDetail.getName().equalsIgnoreCase(NEW_CASH_DETAIL_REINVEST))) {
+            toDelete.add(money);
           }
         }));
     for (Money money : toDelete) {
