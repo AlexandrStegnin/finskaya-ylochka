@@ -21,7 +21,8 @@ public enum TransactionType {
   CLOSING(5, "Закрытие. Вывод"),
   CLOSING_RESALE(6, "Закрытие. Перепродажа доли"),
   UNDEFINED(0, "Не определено"),
-  CASHING(8, "Вывод");
+  CASHING(8, "Вывод"),
+  UPLOAD_SALE(9, "Загрузка данных о продаже");
 
   int id;
   String title;
