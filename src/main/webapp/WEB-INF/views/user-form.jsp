@@ -1,4 +1,4 @@
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <div class="modal" tabindex="-1" role="dialog" id="user-form-modal">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -46,10 +46,18 @@
                         <div class="form-group row">
                             <label class="col-sm-2 offset-sm-2 col-form-label-sm" for="roles">Роль:</label>
                             <div class="col-md-6">
-                                <form:select path="role" id="roles" items="${roles}" multiple="false"
-                                             itemValue="id" itemLabel="humanized" class="form-control form-control-sm selectpicker"
-                                             data-size="10" data-live-search="true" data-none-selected-text="Выберите роль"
-                                />
+                                <form:select path="role" id="roles" multiple="false"
+                                             class="form-control form-control-sm selectpicker"
+                                             data-size="10" data-live-search="true" data-none-selected-text="Выберите роль">
+                                    <c:forEach var="role" items="${roles}">
+                                        <option
+                                                <c:choose>
+                                                    <c:when test="${role.name eq 'ROLE_INVESTOR'}">selected="selected"</c:when>
+                                                </c:choose>
+                                                value="${role.id}" id="${role.id}">${role.humanized}
+                                        </option>
+                                    </c:forEach>
+                                </form:select>
                                 <div class="has-error d-none" id="rolesError">
                                     Необходимо добавить роль
                                 </div>
@@ -62,17 +70,25 @@
                                 <form:select path="partnerId" id="saleChanel" items="${investors}" multiple="false"
                                              itemValue="id" itemLabel="login" class="form-control form-control-sm selectpicker"
                                              data-size="10" data-live-search="true" data-none-selected-text="Выберите инвестора"
-                                             />
+                                />
                             </div>
                         </div>
 
                         <div class="form-group row">
                             <label class="col-sm-2 offset-sm-2 col-form-label-sm" for="kins">Степень родства:</label>
                             <div class="col-md-6">
-                                <form:select path="kin" id="kins" items="${kins}" multiple="false"
-                                             itemLabel="val" itemValue="val" class="form-control form-control-sm selectpicker"
-                                             data-size="10" data-live-search="true" data-none-selected-text="Степень родства"
-                                             />
+                                <form:select path="kin" id="kins" multiple="false"
+                                             class="form-control form-control-sm selectpicker"
+                                             data-size="10" data-live-search="true" data-none-selected-text="Степень родства">
+                                    <c:forEach var="kin" items="${kins}">
+                                        <option
+                                                <c:choose>
+                                                    <c:when test="${kin.name() eq 'NO_KIN'}">selected="selected"</c:when>
+                                                </c:choose>
+                                                value="${kin.val}" id="${kin.val}">${kin.val}
+                                        </option>
+                                    </c:forEach>
+                                </form:select>
                             </div>
                         </div>
 

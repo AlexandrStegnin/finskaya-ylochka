@@ -1,30 +1,29 @@
 package com.finskayaylochka.model.supporting.enums;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+
+import java.util.stream.Stream;
+
+@Getter
+@RequiredArgsConstructor
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public enum KinEnum {
-    EMPTY(null),
-    KIN("Родственник"),
-    NO_KIN("Не родственник"),
-    SPOUSE("Супруг/супруга");
 
-    private final String val;
+  EMPTY(null),
+  KIN("Родственник"),
+  NO_KIN("Не родственник"),
+  SPOUSE("Супруг/супруга");
 
-    KinEnum(String val) {
-        this.val = val;
-    }
+  String val;
 
-    public String getVal() {
-        return val;
-    }
-
-    public static KinEnum fromValue(String val) {
-        for (KinEnum kin : values()) {
-            if (kin.getVal() != null) {
-                if (kin.getVal().equalsIgnoreCase(val)) {
-                    return kin;
-                }
-            }
-        }
-        return EMPTY;
-    }
+  public static KinEnum fromValue(String val) {
+    return Stream.of(values())
+        .filter(kin -> kin.getVal().equalsIgnoreCase(val))
+        .findAny()
+        .orElse(EMPTY);
+  }
 
 }
