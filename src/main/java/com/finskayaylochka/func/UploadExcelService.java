@@ -51,7 +51,6 @@ public class UploadExcelService {
   FacilityService facilityService;
   UnderFacilityService underFacilityService;
   SalePaymentService salePaymentService;
-  GlobalFunctions globalFunctions;
   AccountService accountService;
   AccountTransactionService accountTransactionService;
   MoneyRepository moneyRepository;
@@ -219,7 +218,7 @@ public class UploadExcelService {
         String strCashInUnderFacility = row.getCell(5).getStringCellValue();
         BigDecimal cashInUnderFacility;
         try {
-          cashInUnderFacility = new BigDecimal(strCashInUnderFacility);
+          cashInUnderFacility = new BigDecimal(strCashInUnderFacility).setScale(2, RoundingMode.HALF_UP);
         } catch (NumberFormatException ex) {
           return ApiResponse.build422Response(String.format("Ошибка преобразования суммы \"Вложено в подобъект\". Строка %d, столбец 6", cel));
         }
@@ -252,8 +251,8 @@ public class UploadExcelService {
             .shareType(shareType)
             .cashInFacility(cashInFacility)
             .dateGiven(Date.from(cal.atStartOfDay(ZoneId.systemDefault()).toInstant()))
-            .cashInUnderFacility(cashInUnderFacility.setScale(2, RoundingMode.CEILING))
-            .profitToReInvest(profitToReinvest.setScale(2, RoundingMode.CEILING))
+            .cashInUnderFacility(cashInUnderFacility)
+            .profitToReInvest(profitToReinvest)
             .underFacility(underFacility)
             .dateSale(Date.from(calSale.atStartOfDay(ZoneId.systemDefault()).toInstant()))
             .build();
@@ -396,7 +395,9 @@ public class UploadExcelService {
     transaction.setOperationType(OperationType.DEBIT);
     transaction.setCashType(CashType.INVESTMENT_BODY);
     transaction.setCash(money.getGivenCash());
-    transaction.setParent(parent);
+    if (Objects.nonNull(parent.getId())) {
+      transaction.setParent(parent);
+    }
     money.setTransaction(transaction);
     return transaction;
   }
