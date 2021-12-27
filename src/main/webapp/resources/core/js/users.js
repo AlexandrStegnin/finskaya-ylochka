@@ -487,12 +487,8 @@ function clearUserForm() {
     userModalForm.find('#user-login').val('')
     userModalForm.find('#email').val('')
     userModalForm.find('#phone').val('')
-    userModalForm.find('#roles').prop('selectedIndex', -1)
-    userModalForm.find('#roles').selectpicker('refresh')
     userModalForm.find('#saleChanel').prop('selectedIndex', -1)
     userModalForm.find('#saleChanel').selectpicker('refresh')
-    userModalForm.find('#kins').prop('selectedIndex', -1)
-    userModalForm.find('#kins').selectpicker('refresh')
 }
 
 /**

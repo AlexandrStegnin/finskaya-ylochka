@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+import java.util.Objects;
 import java.util.stream.Stream;
 
 @Getter
@@ -21,6 +22,7 @@ public enum KinEnum {
 
   public static KinEnum fromValue(String val) {
     return Stream.of(values())
+        .filter(kin -> Objects.nonNull(kin.getVal()))
         .filter(kin -> kin.getVal().equalsIgnoreCase(val))
         .findAny()
         .orElse(EMPTY);
