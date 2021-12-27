@@ -226,8 +226,17 @@
         <div class="form-group row" id="shareTypeNameRow">
             <label class="col-sm-2 offset-sm-2 col-form-label-sm" for="shareType">Вид доли:</label>
             <div class="col-sm-6">
-                <form:select path="shareType" id="shareType" items="${shareTypes}" multiple="false"
-                             itemValue="id" itemLabel="title" class="form-control form-control-sm selectpicker"/>
+                <form:select path="shareType" id="shareType" multiple="false"
+                             class="form-control form-control-sm selectpicker">
+                    <c:forEach var="share" items="${shareTypes}">
+                        <option
+                                <c:choose>
+                                    <c:when test="${share.name() eq 'MAIN'}">selected="selected"</c:when>
+                                </c:choose>
+                                value="${share.id}" id="${share.id}">${share.title}
+                        </option>
+                    </c:forEach>
+                </form:select>
                 <div class="has-error col-sm-6 d-none" id="shareTypeError">
                     Необходимо выбрать вид доли
                 </div>
