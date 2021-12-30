@@ -4,7 +4,6 @@ import com.finskayaylochka.model.AppUser;
 import com.finskayaylochka.model.UsersAnnexToContracts;
 import com.finskayaylochka.model.UsersAnnexToContracts_;
 import com.finskayaylochka.repository.UserAnnexRepository;
-import com.finskayaylochka.repository.UserAnnexToContractsRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,15 +13,12 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaDelete;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import java.math.BigInteger;
 import java.util.List;
 import java.util.Objects;
 
 @Service
 @Transactional
 public class UsersAnnexToContractsService {
-
-    private final UserAnnexToContractsRepository userAnnexToContractsRepository;
 
     private final UserAnnexRepository annexRepository;
 
@@ -31,22 +27,11 @@ public class UsersAnnexToContractsService {
     @PersistenceContext(name = "persistanceUnit")
     private EntityManager em;
 
-    public UsersAnnexToContractsService(UserAnnexToContractsRepository userAnnexToContractsRepository,
-                                        UserAnnexRepository annexRepository, AppUserService appUserService) {
-        this.userAnnexToContractsRepository = userAnnexToContractsRepository;
+    public UsersAnnexToContractsService(UserAnnexRepository annexRepository, AppUserService appUserService) {
         this.annexRepository = annexRepository;
         this.appUserService = appUserService;
     }
 
-//    @Cacheable(Constant.USERS_ANNEXES_CACHE_KEY)
-    public List<UsersAnnexToContracts> findByUserAndAnnexName(Long userId, String annexName) {
-        if (!annexName.endsWith(".pdf")) {
-            annexName = annexName + ".pdf";
-        }
-        return userAnnexToContractsRepository.findByUserIdAndAnnex_AnnexName(userId, annexName);
-    }
-
-//    @Cacheable(Constant.USERS_ANNEXES_CACHE_KEY)
     public List<UsersAnnexToContracts> findAll() {
         CriteriaBuilder cb = em.getCriteriaBuilder();
 
@@ -57,12 +42,10 @@ public class UsersAnnexToContractsService {
         return em.createQuery(usersAnnexToContractsCriteriaQuery).getResultList();
     }
 
-//    @Cacheable(Constant.USERS_ANNEXES_CACHE_KEY)
-    public UsersAnnexToContracts findById(BigInteger id) {
+    public UsersAnnexToContracts findById(Long id) {
         return this.em.find(UsersAnnexToContracts.class, id);
     }
 
-//    @Cacheable(Constant.USERS_ANNEXES_CACHE_KEY)
     public List<UsersAnnexToContracts> findByUserId(Long userId) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<UsersAnnexToContracts> query = cb.createQuery(UsersAnnexToContracts.class);
@@ -73,7 +56,6 @@ public class UsersAnnexToContractsService {
         return em.createQuery(query).getResultList();
     }
 
-//    @Cacheable(Constant.USERS_ANNEXES_CACHE_KEY)
     public List<UsersAnnexToContracts> findByLogin(String login) {
         if (Objects.isNull(login)) {
             throw new RuntimeException("Необходимо передать логин пользователя");
@@ -85,8 +67,7 @@ public class UsersAnnexToContractsService {
         return findByUserId(user.getId());
     }
 
-//    @CacheEvict(Constant.USERS_ANNEXES_CACHE_KEY)
-    public void deleteById(BigInteger id) {
+    public void deleteById(Long id) {
         CriteriaBuilder cb = this.em.getCriteriaBuilder();
         CriteriaDelete<UsersAnnexToContracts> delete = cb.createCriteriaDelete(UsersAnnexToContracts.class);
         Root<UsersAnnexToContracts> usersAnnexToContractsRoot = delete.from(UsersAnnexToContracts.class);
@@ -94,12 +75,10 @@ public class UsersAnnexToContractsService {
         this.em.createQuery(delete).executeUpdate();
     }
 
-//    @CachePut(value = Constant.USERS_ANNEXES_CACHE_KEY, key = "#usersAnnexToContracts.id")
     public void update(UsersAnnexToContracts usersAnnexToContracts) {
         this.em.merge(usersAnnexToContracts);
     }
 
-//    @CachePut(Constant.USERS_ANNEXES_CACHE_KEY)
     public void create(UsersAnnexToContracts usersAnnexToContracts) {
         this.em.persist(usersAnnexToContracts);
     }

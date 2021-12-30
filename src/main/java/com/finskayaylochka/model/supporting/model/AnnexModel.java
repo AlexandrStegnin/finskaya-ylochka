@@ -3,7 +3,6 @@ package com.finskayaylochka.model.supporting.model;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.math.BigInteger;
 import java.util.List;
 
 /**
@@ -16,6 +15,6 @@ import java.util.List;
 @Setter
 public class AnnexModel {
 
-    private List<BigInteger> annexIdList;
+    private List<Long> annexIdList;
 
 }

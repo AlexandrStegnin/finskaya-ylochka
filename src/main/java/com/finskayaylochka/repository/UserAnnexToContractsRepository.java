@@ -1,10 +1,11 @@
 package com.finskayaylochka.repository;
 
 import com.finskayaylochka.model.UsersAnnexToContracts;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigInteger;
 import java.util.List;
 
 /**
@@ -12,8 +13,10 @@ import java.util.List;
  */
 
 @Repository
-public interface UserAnnexToContractsRepository extends JpaRepository<UsersAnnexToContracts, BigInteger> {
+public interface UserAnnexToContractsRepository extends JpaRepository<UsersAnnexToContracts, Long> {
 
-    List<UsersAnnexToContracts> findByUserIdAndAnnex_AnnexName(Long userId, String annexName);
+  @Query("SELECT annex FROM UsersAnnexToContracts annex " +
+      "WHERE annex.sentAt IS NULL")
+  List<UsersAnnexToContracts> fetchFirstUnsent(Pageable pageable);
 
 }

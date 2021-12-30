@@ -1,24 +1,25 @@
 package com.finskayaylochka.config.exception;
 
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;
 
 /**
  * @author Alexandr Stegnin
  */
-
-@Getter
+@Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = false)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class ApiException extends RuntimeException {
 
-  private final String message;
+  String message;
+  HttpStatus status;
 
-  private final HttpStatus status;
-
-  public ApiException(String message, HttpStatus status) {
-    this.status = status;
-    this.message = message;
+  public static ApiException build404Exception(String message) {
+    return new ApiException(message, HttpStatus.NOT_FOUND);
   }
 
 }

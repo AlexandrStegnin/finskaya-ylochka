@@ -14,6 +14,7 @@ import com.finskayaylochka.repository.view.InvestorAnnexRepository;
 import com.finskayaylochka.service.AppUserService;
 import com.finskayaylochka.service.UsersAnnexToContractsService;
 import com.finskayaylochka.specifications.InvestorAnnexSpecification;
+import com.finskayaylochka.util.FileUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -29,7 +30,6 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -86,7 +86,7 @@ public class InvestorAnnexService {
     AppUser currentUser = userService.findByLogin(SecurityUtils.getUsername());
     for (MultipartFile uploadedFile : files) {
       checkFile(uploadedFile);
-      Path path = Files.createTempFile("temp-", ".pdf");
+      Path path = Files.createTempFile("temp-", ".jpeg");
       File file = path.toFile();
       uploadedFile.transferTo(file);
       AppUser investor = getInvestor(uploadedFile.getOriginalFilename());
@@ -101,9 +101,9 @@ public class InvestorAnnexService {
       usersAnnexToContracts.setUserId(investor.getId());
       usersAnnexToContracts.setAnnexRead(0);
       usersAnnexToContracts.setDateRead(null);
-      usersAnnexToContractsService.create(usersAnnexToContracts);
 
       uploadFileToNextcloud(file, uploadedFile);
+      usersAnnexToContractsService.create(usersAnnexToContracts);
       Files.delete(path);
     }
     return "Файлы успешно загружены";
@@ -115,8 +115,9 @@ public class InvestorAnnexService {
       log.error(message);
       throw FileUploadException.build400Exception(message);
     }
-    if (!uploadedFile.getOriginalFilename().endsWith(".pdf")) {
-      String message = String.format("Файл %s должен быть в формате .PDF", uploadedFile.getOriginalFilename());
+    if (!uploadedFile.getOriginalFilename().endsWith(".jpeg") &&
+        !uploadedFile.getOriginalFilename().endsWith(".jpg")) {
+      String message = String.format("Файл %s должен быть в формате .jpeg/.jpg", uploadedFile.getOriginalFilename());
       log.error(message);
       throw FileUploadException.build400Exception(message);
     }
@@ -124,10 +125,15 @@ public class InvestorAnnexService {
 
   private void uploadFileToNextcloud(File file, MultipartFile uploadedFile) {
     try {
-      String remoteFolder = nextcloudProperty.getRemoteFolder();
-      connector.uploadFile(file, remoteFolder + uploadedFile.getOriginalFilename());
+      String remoteRootFolder = nextcloudProperty.getRemoteFolder();
+      String subFolder = FileUtils.resolveSubFolder(uploadedFile.getOriginalFilename());
+      String targetFolder = remoteRootFolder + subFolder;
+      if (!connector.folderExists(targetFolder)) {
+        connector.createFolder(targetFolder);
+      }
+      connector.uploadFile(file, targetFolder + uploadedFile.getOriginalFilename());
       SharePermissions permissions = new SharePermissions(SharePermissions.SingleRight.READ);
-      connector.doShare(remoteFolder + uploadedFile.getOriginalFilename(),
+      connector.doShare(targetFolder + uploadedFile.getOriginalFilename(),
           ShareType.PUBLIC_LINK, "", false, null, permissions);
     } catch (Exception e) {
       throw FileUploadException.build400Exception(e.getMessage());
@@ -135,7 +141,7 @@ public class InvestorAnnexService {
   }
 
   private AppUser getInvestor(String fileName) {
-    String investorCode = fileName.substring(0, 3);
+    String investorCode = fileName.substring(0, fileName.indexOf("_"));
     if (StringUtils.isBlank(investorCode) || !StringUtils.isNumeric(investorCode)) {
       throw UsernameParseException.build400Exception(String.format("Ошибка получения логина инвестора из имени файла %s", fileName));
     }
@@ -147,15 +153,20 @@ public class InvestorAnnexService {
     return investor;
   }
 
-  public void delete(BigInteger id) {
+  public void delete(Long id) {
     usersAnnexToContractsService.deleteById(id);
   }
 
-  public void deleteList(List<BigInteger> ids) {
+  public void deleteList(List<Long> ids) {
     String remoteFolder = nextcloudProperty.getRemoteFolder();
     ids.forEach(id -> {
       UsersAnnexToContracts annex = usersAnnexToContractsService.findById(id);
-      connector.removeFile(remoteFolder + annex.getAnnex().getAnnexName());
+      String targetFolder = remoteFolder + FileUtils.resolveSubFolder(annex.getAnnex().getAnnexName());
+      try {
+        connector.removeFile(targetFolder + annex.getAnnex().getAnnexName());
+      } catch (Exception e) {
+        log.error("Ошибка удаления файла в облачном хранилище {}", e.getLocalizedMessage());
+      }
       delete(id);
     });
   }

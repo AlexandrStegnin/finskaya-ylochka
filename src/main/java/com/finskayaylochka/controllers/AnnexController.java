@@ -35,7 +35,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -95,7 +94,7 @@ public class AnnexController {
   }
 
   @RequestMapping("/annexes/{annexId}")
-  public void getFile(HttpServletResponse response, @PathVariable BigInteger annexId) throws IOException {
+  public void getFile(HttpServletResponse response, @PathVariable Long annexId) throws IOException {
     AppUser currentUser = userService.findByLogin(SecurityUtils.getUsername());
     if (Objects.isNull(currentUser)) {
       throw UsernameNotFoundException.build404Exception("Пользователь не найден");
