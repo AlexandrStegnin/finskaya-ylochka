@@ -114,7 +114,7 @@ function checkFilesSize() {
         $.each(files, function () {
             totalSize += parseInt(this.size)
         })
-        if (totalSize > 20971520) {
+        if (totalSize > 52428800) {
             tooltip.tooltip('enable')
             tooltip.tooltip('show')
         } else {

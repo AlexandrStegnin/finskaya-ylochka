@@ -47,7 +47,7 @@
                        enctype="multipart/form-data" class="form-horizontal">
                 <div class="input-group" style="margin: 20px 20px 20px 0">
                     <div class="custom-file">
-                        <input type="file" id="file" name="uploadingFiles" class="form-control-file" multiple data-toggle="tooltip" data-placement="top" title="Размер файлов не должен превышать 20 МБ"/>
+                        <input type="file" id="file" name="uploadingFiles" class="form-control-file" multiple data-toggle="tooltip" data-placement="top" title="Размер файлов не должен превышать 50 МБ"/>
                     </div>
                     <button type="button" class="btn btn-primary btn-sm disabled" id="upload">Загрузить</button>
                 </div>
