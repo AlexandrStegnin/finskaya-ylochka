@@ -36,4 +36,8 @@ public class ApiResponse {
         return new ApiResponse(message, HttpStatus.PRECONDITION_FAILED.value());
     }
 
+    public static ApiResponse build200Response(String message) {
+        return new ApiResponse(message, HttpStatus.OK.value());
+    }
+
 }

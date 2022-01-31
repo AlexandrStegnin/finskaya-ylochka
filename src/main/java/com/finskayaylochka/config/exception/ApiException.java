@@ -22,4 +22,8 @@ public class ApiException extends RuntimeException {
     return new ApiException(message, HttpStatus.NOT_FOUND);
   }
 
+  public static ApiException build422Exception(String message) {
+    return new ApiException(message, HttpStatus.PRECONDITION_FAILED);
+  }
+
 }

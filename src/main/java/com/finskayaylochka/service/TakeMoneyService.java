@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Date;
 import java.util.Objects;
 
 /**
@@ -33,32 +34,30 @@ public class TakeMoneyService {
   AccountService accountService;
 
   public ApiResponse takeMoney(TakeMoneyDTO dto) {
-    Account account = accountService.findByOwnerId(dto.getInvestorId(), OwnerType.INVESTOR);
-    if (Objects.isNull(account)) {
-      throw ApiException.builder()
-          .message(String.format("Счёт инвестора с идентификатором %s не найден", dto.getInvestorId()))
-          .status(HttpStatus.NOT_FOUND)
-          .build();
-    }
+    Account account = findAccount(dto.getInvestorId());
     Account payer = accountService.getFinskayaYlochkaAccount();
     BalanceDTO balanceDTO = accountTransactionService.getBalance(account.getId());
     BigDecimal totalSumToTake = getTotalSumToTake(dto, balanceDTO);
 
-    AccountTransaction transaction = AccountTransaction.builder()
-        .blocked(false)
-        .cash(totalSumToTake.negate())
-        .cashType(CashType.OLD)
-        .operationType(OperationType.CREDIT)
-        .txDate(dto.getDate())
-        .recipient(account)
-        .owner(account)
-        .payer(payer)
-        .build();
+    AccountTransaction transaction = buildAccountTransaction(totalSumToTake.negate(), dto.getDate(), account, account, payer);
+
     accountTransactionService.create(transaction);
-    return ApiResponse.builder()
-        .message("Деньги успешно выведены")
-        .status(HttpStatus.OK.value())
-        .build();
+    return ApiResponse.build200Response("Деньги успешно выведены");
+  }
+
+  public ApiResponse takeAllMoney(TakeMoneyDTO dto) {
+    Account account = findAccount(dto.getInvestorId());
+    Account payer = accountService.getFinskayaYlochkaAccount();
+    BalanceDTO balanceDTO = accountTransactionService.getBalance(account.getId());
+    if (balanceDTO.getSummary().compareTo(BigDecimal.ZERO) == 0) {
+      throw ApiException.build422Exception("Отсутствуют свободные средства для вывода");
+    }
+
+    AccountTransaction transaction = buildAccountTransaction(balanceDTO.getSummary().negate(), dto.getDate(), account, account, payer);
+
+    accountTransactionService.create(transaction);
+
+    return ApiResponse.build200Response("Деньги успешно выведены");
   }
 
   private BigDecimal getTotalSumToTake(TakeMoneyDTO dto, BalanceDTO balanceDTO) {
@@ -80,6 +79,27 @@ public class TakeMoneyService {
           .build();
     }
     return totalSumToTake;
+  }
+
+  private Account findAccount(Long investorId) {
+    Account account = accountService.findByOwnerId(investorId, OwnerType.INVESTOR);
+    if (Objects.isNull(account)) {
+      throw ApiException.build404Exception(String.format("Счёт инвестора с идентификатором %s не найден", investorId));
+    }
+    return account;
+  }
+
+  private AccountTransaction buildAccountTransaction(BigDecimal sum, Date txDate, Account recipient, Account owner, Account payer) {
+    return AccountTransaction.builder()
+        .blocked(false)
+        .cash(sum)
+        .cashType(CashType.OLD)
+        .operationType(OperationType.CREDIT)
+        .txDate(txDate)
+        .recipient(recipient)
+        .owner(owner)
+        .payer(payer)
+        .build();
   }
 
 }

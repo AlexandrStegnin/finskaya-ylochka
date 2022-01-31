@@ -27,4 +27,10 @@ public class TakeMoneyController {
     return takeMoneyService.takeMoney(takeMoneyDTO);
   }
 
+  @ResponseBody
+  @PostMapping("/take-all-money")
+  public ApiResponse takeAllMoney(@RequestBody TakeMoneyDTO takeMoneyDTO) {
+    return takeMoneyService.takeAllMoney(takeMoneyDTO);
+  }
+
 }
