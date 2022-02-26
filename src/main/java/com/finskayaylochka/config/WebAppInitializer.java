@@ -79,9 +79,9 @@ public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServlet
 
   private static final String LOCATION = new File(System.getProperty("java.io.tmpdir")).getAbsolutePath(); // Temporary location where files will be stored
 
-  private static final long MAX_FILE_SIZE = 5242880; // 5MB : Max file size.
+  private static final long MAX_FILE_SIZE = 52428800; // 50MB : Max file size.
   // Beyond that size spring will throw exception.
-  private static final long MAX_REQUEST_SIZE = 20971520; // 20MB : Total request size containing Multi part.
+  private static final long MAX_REQUEST_SIZE = 52428800; // 50MB : Total request size containing Multi part.
 
   private static final int FILE_SIZE_THRESHOLD = 0; // Size threshold after which files will be written to disk
 
