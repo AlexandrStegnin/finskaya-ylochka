@@ -17,22 +17,20 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserProfileDTO {
 
-    Long id;
+  Long id;
+  String lastName;
+  String firstName;
+  String patronymic;
+  String email;
+  Long masterInvestorId;
 
-    String lastName;
-
-    String firstName;
-
-    String patronymic;
-
-    String email;
-
-    public UserProfileDTO(UserProfile profile) {
-        this.id = profile.getId();
-        this.lastName = profile.getLastName();
-        this.firstName = profile.getFirstName();
-        this.patronymic = profile.getPatronymic();
-        this.email = profile.getEmail();
-    }
+  public UserProfileDTO(UserProfile profile) {
+    this.id = profile.getId();
+    this.lastName = profile.getLastName();
+    this.firstName = profile.getFirstName();
+    this.patronymic = profile.getPatronymic();
+    this.email = profile.getEmail();
+    this.masterInvestorId = profile.getMasterInvestorId();
+  }
 
 }

@@ -4,7 +4,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -14,7 +13,7 @@ public class ScheduledService {
 
     SendFilesService sendFilesService;
 
-    @Scheduled(cron = "* */1 * * * ?")
+//    @Scheduled(cron = "* */1 * * * ?")
     @SchedulerLock(name = "ScheduledService_sendFiles",// уникальное имя задачи
         lockAtLeastFor = "PT59S", // запускать не чаще, чем раз в 59 сек
         lockAtMostFor = "PT59S") // если нода "умерла" и не отпустила локу, то держит её не более 59 сек

@@ -68,12 +68,14 @@ UserProfileDTO.prototype = {
     firstName: '',
     patronymic: '',
     email: '',
-    build: function (id, lastName, firstName, patronymic, email) {
+    masterInvestorId: 0,
+    build: function (id, lastName, firstName, patronymic, email, masterInvestorId) {
         this.id = id;
         this.lastName = lastName;
         this.firstName = firstName;
         this.patronymic = patronymic;
         this.email = email;
+        this.masterInvestorId = masterInvestorId;
     }
 }
 
@@ -287,7 +289,8 @@ function getUserDTO() {
 
     let userDTO = new UserDTO()
     userDTO.build(userId, login, role, partnerId, kin, phone)
-    userDTO.profile = createProfile(userId, $('#lastName').val(), $('#firstName').val(), $('#patronymic').val(), $('#email').val());
+    userDTO.profile = createProfile(userId, $('#lastName').val(), $('#firstName').val(), $('#patronymic').val(), $('#email').val(),
+        $('#master-investor').val());
 
     return userDTO
 }
@@ -342,9 +345,10 @@ function getPartner() {
  * @param firstName Имя
  * @param patronymic Отчество
  * @param email адрес эл почты
+ * @param masterInvestorId id основного инвестора
  * @returns {UserProfileDTO}
  */
-function createProfile(userId, lastName, firstName, patronymic, email) {
+function createProfile(userId, lastName, firstName, patronymic, email, masterInvestorId) {
     let profile = new UserProfileDTO();
     if (lastName.length === 0) {
         lastName = null;
@@ -355,7 +359,10 @@ function createProfile(userId, lastName, firstName, patronymic, email) {
     if (patronymic.length === 0) {
         patronymic = null;
     }
-    profile.build(userId, lastName, firstName, patronymic, email);
+    if (masterInvestorId.length === 0) {
+        masterInvestorId = null;
+    }
+    profile.build(userId, lastName, firstName, patronymic, email, masterInvestorId);
     return profile;
 }
 
@@ -551,7 +558,8 @@ function getUser(userId) {
  */
 function showUpdateUserForm(data) {
     let userDTO = new UserDTO()
-    userDTO.build(data.id, data.login, data.role, data.partnerId, data.kin, data.phones[0].number)
+    let phone = data.phones.length > 0 ? data.phones[0].number : null
+    userDTO.build(data.id, data.login, data.role, data.partnerId, data.kin, phone)
     userDTO.profile = data.profile
     let userForm = $('#user-form-modal')
     userForm.find('#id').val(userDTO.id)

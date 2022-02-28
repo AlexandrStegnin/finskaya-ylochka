@@ -176,6 +176,7 @@ public class AppUserService {
     profile.setLastName(user.getProfile().getLastName());
     profile.setPatronymic(user.getProfile().getPatronymic());
     profile.setEmail(user.getProfile().getEmail());
+    profile.setMasterInvestorId(user.getProfile().getMasterInvestorId());
   }
 
   private String generatePassword() {

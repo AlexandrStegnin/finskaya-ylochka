@@ -93,6 +93,16 @@
                         </div>
 
                         <div class="form-group row">
+                            <label class="col-sm-2 offset-sm-2 col-form-label-sm" for="saleChanel">Мастер-инвестор:</label>
+                            <div class="col-md-6">
+                                <form:select path="profile.masterInvestorId" id="master-investor" items="${investors}" multiple="false"
+                                             itemValue="id" itemLabel="login" class="form-control form-control-sm selectpicker"
+                                             data-size="10" data-live-search="true" data-none-selected-text="Выберите мастер-инвестора"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
                             <label class="col-sm-2 offset-sm-2 col-form-label-sm" for="lastName">Фамилия:</label>
                             <div class="col-md-6">
                                 <form:input type="text" path="profile.lastName" id="lastName" class="form-control input-md"/>

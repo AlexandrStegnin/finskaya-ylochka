@@ -1,10 +1,14 @@
 package com.finskayaylochka.model;
 
 import com.finskayaylochka.model.supporting.dto.UserProfileDTO;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 import javax.persistence.*;
+
 
 /**
  * @author Alexandr Stegnin
@@ -12,36 +16,42 @@ import javax.persistence.*;
 
 @Data
 @Entity
-@Table(name = "user_profile")
 @NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "user_profile")
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserProfile {
 
-    @Id
-    private Long id;
+  @Id
+  Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id")
-    @MapsId
-    private AppUser user;
+  @OneToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "id")
+  @MapsId
+  AppUser user;
 
-    @Column(name = "last_name")
-    private String lastName;
+  @Column(name = "last_name")
+  String lastName;
 
-    @Column(name = "first_name")
-    private String firstName;
+  @Column(name = "first_name")
+  String firstName;
 
-    @Column(name = "patronymic")
-    private String patronymic;
+  @Column(name = "patronymic")
+  String patronymic;
 
-    private String email;
+  String email;
 
-    private boolean locked = false;
+  boolean locked = false;
 
-    public UserProfile(UserProfileDTO profileDTO) {
-        this.lastName = profileDTO.getLastName();
-        this.firstName = profileDTO.getFirstName();
-        this.patronymic = profileDTO.getPatronymic();
-        this.email = profileDTO.getEmail();
-    }
+  @Column(name = "master_investor_id")
+  Long masterInvestorId;
+
+  public UserProfile(UserProfileDTO profileDTO) {
+    this.lastName = profileDTO.getLastName();
+    this.firstName = profileDTO.getFirstName();
+    this.patronymic = profileDTO.getPatronymic();
+    this.email = profileDTO.getEmail();
+    this.masterInvestorId = profileDTO.getMasterInvestorId();
+  }
 
 }
