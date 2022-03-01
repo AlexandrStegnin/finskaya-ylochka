@@ -13,6 +13,7 @@ import com.finskayaylochka.model.supporting.dto.UserDTO;
 import com.finskayaylochka.model.supporting.enums.AppPage;
 import com.finskayaylochka.model.supporting.enums.KinEnum;
 import com.finskayaylochka.model.supporting.enums.OwnerType;
+import com.finskayaylochka.model.supporting.enums.UserType;
 import com.finskayaylochka.model.supporting.filters.AppUserFilter;
 import com.finskayaylochka.service.*;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
@@ -97,11 +98,12 @@ public class AppUserController {
     Pageable pageable = new PageRequest(filter.getPageNumber(), filter.getPageSize());
     Page<AppUser> page = appUserService.findAll(filter, pageable);
     List<KinEnum> kins = new ArrayList<>(Arrays.asList(KinEnum.values()));
+    List<UserType> userTypes = new ArrayList<>(Arrays.asList(UserType.values()));
     model.addObject("page", page);
     model.addObject("filter", filter);
     model.addObject("userDTO", new UserDTO());
     model.addObject("kins", kins);
-
+    model.addObject("userTypes", userTypes);
     return model;
   }
 

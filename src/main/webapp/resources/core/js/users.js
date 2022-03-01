@@ -69,13 +69,15 @@ UserProfileDTO.prototype = {
     patronymic: '',
     email: '',
     masterInvestorId: 0,
-    build: function (id, lastName, firstName, patronymic, email, masterInvestorId) {
+    type: '',
+    build: function (id, lastName, firstName, patronymic, email, masterInvestorId, type) {
         this.id = id;
         this.lastName = lastName;
         this.firstName = firstName;
         this.patronymic = patronymic;
         this.email = email;
         this.masterInvestorId = masterInvestorId;
+        this.type = type;
     }
 }
 
@@ -290,7 +292,7 @@ function getUserDTO() {
     let userDTO = new UserDTO()
     userDTO.build(userId, login, role, partnerId, kin, phone)
     userDTO.profile = createProfile(userId, $('#lastName').val(), $('#firstName').val(), $('#patronymic').val(), $('#email').val(),
-        $('#master-investor').val());
+        $('#master-investor').val(), $('#user_type').val());
 
     return userDTO
 }
@@ -346,9 +348,10 @@ function getPartner() {
  * @param patronymic Отчество
  * @param email адрес эл почты
  * @param masterInvestorId id основного инвестора
+ * @param userType тип инвестора
  * @returns {UserProfileDTO}
  */
-function createProfile(userId, lastName, firstName, patronymic, email, masterInvestorId) {
+function createProfile(userId, lastName, firstName, patronymic, email, masterInvestorId, userType) {
     let profile = new UserProfileDTO();
     if (lastName.length === 0) {
         lastName = null;
@@ -362,7 +365,10 @@ function createProfile(userId, lastName, firstName, patronymic, email, masterInv
     if (masterInvestorId.length === 0) {
         masterInvestorId = null;
     }
-    profile.build(userId, lastName, firstName, patronymic, email, masterInvestorId);
+    if (userType.length === 0) {
+        userType = null
+    }
+    profile.build(userId, lastName, firstName, patronymic, email, masterInvestorId, userType);
     return profile;
 }
 
@@ -569,6 +575,7 @@ function showUpdateUserForm(data) {
     bindRoles(userDTO.role)
     bindPartner(userDTO.partnerId)
     bindKin(userDTO.kin)
+    bindType(userDTO.profile.type)
     bindPhone(userDTO.phones[0].number)
     userForm.find('#lastName').val(userDTO.profile.lastName)
     userForm.find('#firstName').val(userDTO.profile.firstName)
@@ -620,6 +627,21 @@ function bindKin(kin) {
         }
     })
     userForm.find('#kins').selectpicker('refresh')
+}
+
+/**
+ * Преобразовать тип инвестора в выделенный элемент выпадающего списка
+ *
+ * @param type
+ */
+function bindType(type) {
+    let userForm = $('#user-form-modal');
+    $.each(userForm.find('#user_type option'), function (ind, el) {
+        if (el.value === (type + '')) {
+            $(el).prop('selected', true)
+        }
+    })
+    userForm.find('#user_type').selectpicker('refresh')
 }
 
 /**

@@ -165,6 +165,7 @@ public class AppUserService {
     dbUser.setPartner(user.getPartner());
     dbUser.setKin(user.getKin());
     dbUser.setRole(user.getRole());
+    user.getPhones().forEach(dbUser::addPhone);
     updateProfile(user, dbUser);
     appUserRepository.save(dbUser);
     return new ApiResponse("Пользователь успешно обновлён");
@@ -177,6 +178,7 @@ public class AppUserService {
     profile.setPatronymic(user.getProfile().getPatronymic());
     profile.setEmail(user.getProfile().getEmail());
     profile.setMasterInvestorId(user.getProfile().getMasterInvestorId());
+    profile.setType(user.getProfile().getType());
   }
 
   private String generatePassword() {

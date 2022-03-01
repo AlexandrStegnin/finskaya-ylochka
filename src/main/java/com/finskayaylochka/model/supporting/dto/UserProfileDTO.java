@@ -1,6 +1,7 @@
 package com.finskayaylochka.model.supporting.dto;
 
 import com.finskayaylochka.model.UserProfile;
+import com.finskayaylochka.model.supporting.enums.UserType;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -23,6 +24,7 @@ public class UserProfileDTO {
   String patronymic;
   String email;
   Long masterInvestorId;
+  UserType type;
 
   public UserProfileDTO(UserProfile profile) {
     this.id = profile.getId();
@@ -31,6 +33,7 @@ public class UserProfileDTO {
     this.patronymic = profile.getPatronymic();
     this.email = profile.getEmail();
     this.masterInvestorId = profile.getMasterInvestorId();
+    this.type = profile.getType();
   }
 
 }

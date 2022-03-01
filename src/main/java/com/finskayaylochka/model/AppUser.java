@@ -116,4 +116,9 @@ public class AppUser implements Serializable {
     return null;
   }
 
+  public void addPhone(Phone phone) {
+    this.phones.add(phone);
+    phone.setUser(this);
+  }
+
 }

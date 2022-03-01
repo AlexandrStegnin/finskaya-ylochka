@@ -1,6 +1,7 @@
 package com.finskayaylochka.model;
 
 import com.finskayaylochka.model.supporting.dto.UserProfileDTO;
+import com.finskayaylochka.model.supporting.enums.UserType;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -46,12 +47,17 @@ public class UserProfile {
   @Column(name = "master_investor_id")
   Long masterInvestorId;
 
-  public UserProfile(UserProfileDTO profileDTO) {
-    this.lastName = profileDTO.getLastName();
-    this.firstName = profileDTO.getFirstName();
-    this.patronymic = profileDTO.getPatronymic();
-    this.email = profileDTO.getEmail();
-    this.masterInvestorId = profileDTO.getMasterInvestorId();
+  @Enumerated
+  @Column(name = "user_type")
+  UserType type;
+
+  public UserProfile(UserProfileDTO dto) {
+    this.lastName = dto.getLastName();
+    this.firstName = dto.getFirstName();
+    this.patronymic = dto.getPatronymic();
+    this.email = dto.getEmail();
+    this.masterInvestorId = dto.getMasterInvestorId();
+    this.type = dto.getType();
   }
 
 }

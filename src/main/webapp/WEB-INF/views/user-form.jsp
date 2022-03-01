@@ -103,6 +103,24 @@
                         </div>
 
                         <div class="form-group row">
+                            <label class="col-sm-2 offset-sm-2 col-form-label-sm" for="user_type">Тип инвестора:</label>
+                            <div class="col-md-6">
+                                <form:select path="profile.type" id="user_type" multiple="false"
+                                             class="form-control form-control-sm selectpicker"
+                                             data-size="10" data-live-search="true" data-none-selected-text="Тип инвестора">
+                                    <c:forEach var="userType" items="${userTypes}">
+                                        <option
+                                                <c:choose>
+                                                    <c:when test="${userType.name() eq 'LEGAL'}">selected="selected"</c:when>
+                                                </c:choose>
+                                                value="${userType.name()}" id="${userType.description}">${userType.description}
+                                        </option>
+                                    </c:forEach>
+                                </form:select>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
                             <label class="col-sm-2 offset-sm-2 col-form-label-sm" for="lastName">Фамилия:</label>
                             <div class="col-md-6">
                                 <form:input type="text" path="profile.lastName" id="lastName" class="form-control input-md"/>
