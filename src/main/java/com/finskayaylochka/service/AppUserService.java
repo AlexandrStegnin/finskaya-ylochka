@@ -140,6 +140,7 @@ public class AppUserService {
       user.getProfile().setFirstName("Инвестор " + user.getLogin().substring(8));
     }
     user.setLogin(user.getLogin().toLowerCase());
+    user.setUniqueNumber(UUID.randomUUID().toString().substring(0, 8));
     appUserRepository.save(user);
     if (SecurityUtils.isUserInRole(user, UserRole.ROLE_INVESTOR)) {
       accountService.createAccount(user);

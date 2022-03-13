@@ -69,6 +69,9 @@ public class AppUser implements Serializable {
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   List<Phone> phones = new ArrayList<>();
 
+  @Column(name = "unique_number")
+  String uniqueNumber;
+
   public AppUser() {
   }
 
