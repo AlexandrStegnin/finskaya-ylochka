@@ -130,13 +130,11 @@ public class UploadExcelService {
         Calendar dateSale = Calendar.getInstance();
         try {
           Cell cell = row.getCell(8);
-          switch (cell.getCellTypeEnum()) {
-            case NUMERIC:
-              dateSale.setTime(FORMAT.parse(cell.getDateCellValue().toString()));
-              break;
-            case STRING:
-              dateSale.setTime(DDMMYYYY_FORMAT.parse(cell.getStringCellValue()));
-              break;
+          CellType cellType = cell.getCellTypeEnum();
+          if (CellType.NUMERIC == cellType) {
+            dateSale.setTime(FORMAT.parse(cell.getDateCellValue().toString()));
+          } else if (CellType.STRING == cellType) {
+            dateSale.setTime(DDMMYYYY_FORMAT.parse(cell.getStringCellValue()));
           }
         } catch (Exception ex) {
           return ApiResponse.build422Response(String.format("Неудачная попытка конвертировать строку в дату. Строка %d, столбец 9", cel));
@@ -147,22 +145,21 @@ public class UploadExcelService {
         Date realDateGiven = null;
         Cell cell = row.getCell(9);
         CellType cellType = cell.getCellTypeEnum();
-        switch (cellType) {
-          case STRING:
-            realDateGivenStr = cell.getStringCellValue();
-            try {
-              realDateGiven = FORMAT.parse(realDateGivenStr);
-            } catch (Exception ignored) {
-            }
-            break;
-          case NUMERIC:
-            realDateGiven = cell.getDateCellValue();
-            break;
+        if (CellType.STRING == cellType) {
+          realDateGivenStr = cell.getStringCellValue();
+          try {
+            realDateGiven = FORMAT.parse(realDateGivenStr);
+          } catch (Exception e) {
+            log.error("Upload sale error: {}", e.getMessage());
+          }
+        } else if (CellType.NUMERIC == cellType) {
+          realDateGiven = cell.getDateCellValue();
         }
 
         try {
           row.cellIterator().forEachRemaining(c -> c.setCellType(CellType.STRING));
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+          log.error("Upload sale error: {}", e.getMessage());
         }
 
         String login = row.getCell(1).getStringCellValue();
@@ -270,7 +267,12 @@ public class UploadExcelService {
           salePayment.setIsReinvest(1);
           AccountTransaction transaction = userTransactions.get(user.getId());
           if (Objects.isNull(transaction)) {
-            transaction = createSaleTransaction(user, salePayment, parentTransaction);
+            try {
+              transaction = createSaleTransaction(user, salePayment, parentTransaction);
+            } catch (EntityNotFoundException e) {
+              log.error(e.getMessage());
+              return ApiResponse.build404Response(e.getMessage());
+            }
           } else {
             transaction = updateSaleTransaction(transaction, salePayment);
           }
@@ -289,7 +291,10 @@ public class UploadExcelService {
           }
           salePaymentService.create(salePayment);
         }
-        closeOpenedMonies(investorsUnderFacilities, reportDate, parentTransaction);
+        ApiResponse response = closeOpenedMonies(investorsUnderFacilities, reportDate, parentTransaction);
+        if (response.getStatus() != HttpStatus.OK.value()) {
+          return response;
+        }
       }
     }
     return new ApiResponse("Загрузка файла с данными о продаже завершена");
@@ -301,24 +306,30 @@ public class UploadExcelService {
    * @param investorsUnderFacilities список пользователей и их подобъектов
    * @param reportDate               дата продажи
    */
-  private void closeOpenedMonies(Map<Long, List<Long>> investorsUnderFacilities, LocalDate reportDate, AccountTransaction parent) {
+  private ApiResponse closeOpenedMonies(Map<Long, List<Long>> investorsUnderFacilities, LocalDate reportDate, AccountTransaction parent) {
     TypeClosing typeClosing = typeClosingRepository.findByName("Продажа");
     if (Objects.isNull(typeClosing)) {
-      throw new EntityNotFoundException("Не найден вид закрытия [Продажа]");
+      return ApiResponse.build404Response("Не найден вид закрытия [Продажа]");
     }
     if (Objects.isNull(reportDate)) {
       reportDate = LocalDate.now();
     }
     Date dateClosing = Date.from(reportDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-    investorsUnderFacilities.forEach((k, v) -> v.forEach(ufId -> {
-      List<Money> monies = moneyRepository.getOpenedMonies(ufId, k);
-      monies.forEach(money -> {
-        money.setDateClosing(dateClosing);
-        money.setTypeClosing(typeClosing);
-        money.setIsReinvest(1);
-      });
-      moveMoniesToAccount(monies, parent);
-    }));
+    try {
+      investorsUnderFacilities.forEach((k, v) -> v.forEach(ufId -> {
+        List<Money> monies = moneyRepository.getOpenedMonies(ufId, k);
+        monies.forEach(money -> {
+          money.setDateClosing(dateClosing);
+          money.setTypeClosing(typeClosing);
+          money.setIsReinvest(1);
+        });
+        moveMoniesToAccount(monies, parent);
+      }));
+    } catch (EntityNotFoundException e) {
+      log.error(e.getMessage());
+      return ApiResponse.build404Response(e.getMessage());
+    }
+    return ApiResponse.build200Response("Деньги успешно закрыты");
   }
 
   /**

@@ -40,4 +40,7 @@ public class ApiResponse {
         return new ApiResponse(message, HttpStatus.OK.value());
     }
 
+    public static ApiResponse build404Response(String message) {
+        return new ApiResponse(message, HttpStatus.NOT_FOUND.value());
+    }
 }
