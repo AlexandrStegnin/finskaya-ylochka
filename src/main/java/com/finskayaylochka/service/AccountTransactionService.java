@@ -2,9 +2,21 @@ package com.finskayaylochka.service;
 
 import com.finskayaylochka.config.exception.ApiException;
 import com.finskayaylochka.config.exception.EntityNotFoundException;
-import com.finskayaylochka.model.*;
+import com.finskayaylochka.model.Account;
+import com.finskayaylochka.model.AccountTransaction;
+import com.finskayaylochka.model.AppUser;
+import com.finskayaylochka.model.Facility;
+import com.finskayaylochka.model.Money;
+import com.finskayaylochka.model.NewCashDetail;
+import com.finskayaylochka.model.SalePayment;
+import com.finskayaylochka.model.UnderFacility;
 import com.finskayaylochka.model.supporting.ApiResponse;
-import com.finskayaylochka.model.supporting.dto.*;
+import com.finskayaylochka.model.supporting.dto.AccountDTO;
+import com.finskayaylochka.model.supporting.dto.AccountSummaryDTO;
+import com.finskayaylochka.model.supporting.dto.AccountTransactionDTO;
+import com.finskayaylochka.model.supporting.dto.AccountTxDTO;
+import com.finskayaylochka.model.supporting.dto.BalanceDTO;
+import com.finskayaylochka.model.supporting.dto.ReBuyShareDTO;
 import com.finskayaylochka.model.supporting.enums.CashType;
 import com.finskayaylochka.model.supporting.enums.OperationType;
 import com.finskayaylochka.model.supporting.enums.OwnerType;
@@ -20,12 +32,18 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.finskayaylochka.config.application.Constant.NEW_CASH_DETAIL_REINVEST;
@@ -114,7 +132,7 @@ public class AccountTransactionService {
   }
 
   public Page<AccountTransaction> findAll(AccTxFilter filter, Pageable pageable) {
-    if (filter.getPageSize() == 0) pageable = new PageRequest(filter.getPageNumber(), filter.getTotal() + 1);
+    if (filter.getPageSize() == 0) pageable = new PageRequest(filter.getPageNumber(), filter.getTotal() + 1, Sort.Direction.ASC, "");
     return accountTransactionRepository.findAll(
         transactionSpecification.getFilter(filter),
         pageable
