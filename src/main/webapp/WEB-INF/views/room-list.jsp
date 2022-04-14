@@ -76,9 +76,9 @@
         <c:forEach items="${rooms}" var="room">
             <tr>
                 <td>${room.id}</td>
-                <td>${room.underFacility.facility.name}</td>
-                <td>${room.underFacility.name}</td>
-                <td>${room.name}</td>
+                <td style="word-wrap: break-word">${room.underFacility.facility.name}</td>
+                <td style="word-wrap: break-word">${room.underFacility.name}</td>
+                <td style="word-wrap: break-word">${room.name}</td>
                 <td>
                     <fmt:setLocale value="ru-RU" scope="session"/>
                     <fmt:formatNumber value="${room.roomSize}" type="number" minFractionDigits="2"/>
