@@ -71,13 +71,6 @@ public class AccountTransactionService {
     return accountTransactionRepository.save(transaction);
   }
 
-  public AccountTransaction update(AccountTransaction transaction) {
-    if (transaction.getId() == null) {
-      throw new RuntimeException("Не задан id транзакции");
-    }
-    return accountTransactionRepository.save(transaction);
-  }
-
   public void delete(AccountTransaction transaction) {
     accountTransactionRepository.delete(transaction);
   }
@@ -106,21 +99,6 @@ public class AccountTransactionService {
    */
   private void deleteByParent(AccountTransaction parent) {
     accountTransactionRepository.delete(parent);
-  }
-
-  /**
-   * Удалить по id
-   *
-   * @param accTxId id транзакции
-   */
-  public void deleteById(Long accTxId) {
-    AccountTransaction transaction = findById(accTxId);
-    if (transaction.getParent() != null) {
-      AccountTransaction parent = transaction.getParent();
-      Set<AccountTransaction> children = parent.getChild();
-      releaseMonies(new ArrayList<>(children));
-    }
-    delete(transaction);
   }
 
   public AccountTransaction findById(Long id) {
@@ -359,18 +337,6 @@ public class AccountTransactionService {
   }
 
   /**
-   * Получить список владельцев счетов (ИНВЕСТОРОВ) для фильтрации
-   *
-   * @return список владельцев
-   */
-  public List<String> initInvestorOwners() {
-    List<String> owners = new ArrayList<>();
-    owners.add("Выберите владельца");
-    owners.addAll(accountTransactionRepository.getOwners(OwnerType.INVESTOR));
-    return owners;
-  }
-
-  /**
    * Получить список транзакций по определённому счёту
    *
    * @param dto DTO для просмотра информации
@@ -548,6 +514,7 @@ public class AccountTransactionService {
     Money money = createMoney(owner, dto);
     creditTx.setCashType(CashType.INVESTOR_CASH);
     creditTx.setCash(money.getGivenCash().negate());
+    creditTx.setDateGiven(money.getDateGiven());
     accountTransactionRepository.save(creditTx);
     money.setTransaction(creditTx);
     moneyRepository.save(money);

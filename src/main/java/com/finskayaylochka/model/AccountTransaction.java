@@ -83,6 +83,9 @@ public class AccountTransaction {
   @Column(name = "cash")
   BigDecimal cash;
 
+  @Column(name = "date_given")
+  Date dateGiven;
+
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "creation_time")
   Date creationTime;
