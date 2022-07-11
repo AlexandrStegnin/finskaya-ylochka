@@ -164,6 +164,7 @@
             <th>Отправитель</th>
             <th>Получатель</th>
             <th>Дата вложения</th>
+            <th>Дата продажи</th>
             <th style="width: 5%">Выбрать</th>
             <th>Баланс</th>
         </tr>
@@ -182,6 +183,7 @@
                 <td>${tx.payer.ownerName}</td>
                 <td>${tx.recipient.ownerName}</td>
                 <td><fmt:formatDate pattern="dd.MM.yyyy" value="${tx.dateGiven}"/></td>
+                <td><fmt:formatDate pattern="dd.MM.yyyy" value="${tx.dateSale}"/></td>
                 <td style="text-align: center"><input type="checkbox"
                                                       data-object-id="${tx.id}"
                                                       data-owner-id="${tx.owner.ownerId}"
