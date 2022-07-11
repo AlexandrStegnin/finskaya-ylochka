@@ -83,8 +83,8 @@ public class AccountTransaction {
   @Column(name = "cash")
   BigDecimal cash;
 
-  @Column(name = "date_given")
-  Date dateGiven;
+  @Column(name = "date_reinvest")
+  Date dateReinvest;
 
   @Column(name = "date_sale")
   Date dateSale;

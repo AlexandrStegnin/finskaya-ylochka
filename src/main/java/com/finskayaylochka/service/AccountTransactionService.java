@@ -514,7 +514,7 @@ public class AccountTransactionService {
     Money money = createMoney(owner, dto);
     creditTx.setCashType(CashType.INVESTOR_CASH);
     creditTx.setCash(money.getGivenCash().negate());
-    creditTx.setDateGiven(money.getDateGiven());
+    creditTx.setDateReinvest(money.getDateGiven());
     accountTransactionRepository.save(creditTx);
     money.setTransaction(creditTx);
     moneyRepository.save(money);

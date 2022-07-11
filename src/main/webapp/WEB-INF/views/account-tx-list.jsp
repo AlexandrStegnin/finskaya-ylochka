@@ -182,7 +182,7 @@
                 <td>${tx.cashType.title}</td>
                 <td>${tx.payer.ownerName}</td>
                 <td>${tx.recipient.ownerName}</td>
-                <td><fmt:formatDate pattern="dd.MM.yyyy" value="${tx.dateGiven}"/></td>
+                <td><fmt:formatDate pattern="dd.MM.yyyy" value="${tx.dateReinvest}"/></td>
                 <td><fmt:formatDate pattern="dd.MM.yyyy" value="${tx.dateSale}"/></td>
                 <td style="text-align: center"><input type="checkbox"
                                                       data-object-id="${tx.id}"
