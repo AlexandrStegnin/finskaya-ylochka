@@ -86,6 +86,9 @@ public class AccountTransaction {
   @Column(name = "date_given")
   Date dateGiven;
 
+  @Column(name = "date_sale")
+  Date dateSale;
+
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "creation_time")
   Date creationTime;

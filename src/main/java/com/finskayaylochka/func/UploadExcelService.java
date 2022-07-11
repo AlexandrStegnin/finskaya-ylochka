@@ -378,6 +378,7 @@ public class UploadExcelService {
       parent.setOwner(payer);
       parent.setOperationType(OperationType.DEBIT);
       parent.setCashType(CashType.SALE_CASH);
+      parent.setDateSale(salePayment.getDateSale());
       accountTransactionService.create(parent);
     }
     AccountTransaction transaction = new AccountTransaction(owner);
