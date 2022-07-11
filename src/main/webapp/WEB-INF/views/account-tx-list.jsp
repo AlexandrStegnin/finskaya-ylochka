@@ -163,6 +163,7 @@
             <th>Вид денег</th>
             <th>Отправитель</th>
             <th>Получатель</th>
+            <th>Дата вложения</th>
             <th style="width: 5%">Выбрать</th>
             <th>Баланс</th>
         </tr>
@@ -180,6 +181,7 @@
                 <td>${tx.cashType.title}</td>
                 <td>${tx.payer.ownerName}</td>
                 <td>${tx.recipient.ownerName}</td>
+                <td><fmt:formatDate pattern="dd.MM.yyyy" value="${tx.dateGiven}"/></td>
                 <td style="text-align: center"><input type="checkbox"
                                                       data-object-id="${tx.id}"
                                                       data-owner-id="${tx.owner.ownerId}"
