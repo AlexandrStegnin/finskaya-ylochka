@@ -1,21 +1,47 @@
 package com.finskayaylochka.controllers;
 
+import com.finskayaylochka.config.application.Location;
+import com.finskayaylochka.model.AppUser;
+import com.finskayaylochka.model.CashSource;
+import com.finskayaylochka.model.Facility;
+import com.finskayaylochka.model.Money;
+import com.finskayaylochka.model.NewCashDetail;
+import com.finskayaylochka.model.TypeClosing;
+import com.finskayaylochka.model.UnderFacility;
 import com.finskayaylochka.model.supporting.ApiResponse;
 import com.finskayaylochka.model.supporting.SearchSummary;
+import com.finskayaylochka.model.supporting.dto.AcceptMoneyDTO;
+import com.finskayaylochka.model.supporting.dto.CashingMoneyDTO;
+import com.finskayaylochka.model.supporting.dto.CloseCashDTO;
+import com.finskayaylochka.model.supporting.dto.CreateMoneyDTO;
+import com.finskayaylochka.model.supporting.dto.DeleteMoneyDTO;
+import com.finskayaylochka.model.supporting.dto.DividedCashDTO;
+import com.finskayaylochka.model.supporting.dto.InvestorCashDTO;
+import com.finskayaylochka.model.supporting.dto.ReBuyShareDTO;
+import com.finskayaylochka.model.supporting.dto.ReinvestCashDTO;
+import com.finskayaylochka.model.supporting.dto.ResaleMoneyDTO;
+import com.finskayaylochka.model.supporting.dto.UpdateMoneyDTO;
 import com.finskayaylochka.model.supporting.enums.AppPage;
 import com.finskayaylochka.model.supporting.enums.MoneyOperation;
 import com.finskayaylochka.model.supporting.enums.ShareType;
-import com.finskayaylochka.config.application.Location;
-import com.finskayaylochka.model.*;
-import com.finskayaylochka.model.supporting.dto.*;
 import com.finskayaylochka.model.supporting.filters.CashFilter;
-import com.finskayaylochka.service.*;
+import com.finskayaylochka.service.AppFilterService;
+import com.finskayaylochka.service.AppUserService;
+import com.finskayaylochka.service.CashSourceService;
+import com.finskayaylochka.service.FacilityService;
+import com.finskayaylochka.service.MoneyService;
+import com.finskayaylochka.service.NewCashDetailService;
+import com.finskayaylochka.service.StatusService;
+import com.finskayaylochka.service.TypeClosingService;
+import com.finskayaylochka.service.UnderFacilityService;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Hibernate;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.MediaType;
@@ -25,13 +51,23 @@ import org.springframework.ui.ModelMap;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -86,7 +122,7 @@ public class MoneyController {
   @GetMapping(path = Location.MONEY_LIST)
   public ModelAndView moneyByPageNumber(@PageableDefault(size = 100) @SortDefault Pageable pageable) {
     cashFilters = (CashFilter) appFilterService.getFilter(cashFilters, CashFilter.class, AppPage.MONEY);
-    return prepareModel(pageable, cashFilters);
+    return prepareModel(cashFilters);
   }
 
   /**
@@ -97,21 +133,74 @@ public class MoneyController {
    */
   @PostMapping(path = Location.MONEY_LIST)
   public ModelAndView moneyPageable(@ModelAttribute(value = "cashFilters") CashFilter cashFilters) {
-    Pageable pageable;
     if (cashFilters.getFiltered() == 0) {
       cashFilters.setFiltered(1);
     }
-    if (cashFilters.isAllRows()) {
-      pageable = new PageRequest(0, Integer.MAX_VALUE);
-    } else {
-      pageable = new PageRequest(cashFilters.getPageNumber(), cashFilters.getPageSize());
-    }
     appFilterService.updateFilter(cashFilters, AppPage.MONEY);
-    return prepareModel(pageable, cashFilters);
+    return prepareModel(cashFilters);
   }
 
-  private ModelAndView prepareModel(Pageable pageable, CashFilter cashFilters) {
+  @NotNull
+  private Pageable getPageable(CashFilter cashFilters) {
+    Pageable pageable;
+    Sort dateSort = getDateOrder(cashFilters);
+    Sort sumSort = getSumOrder(cashFilters);
+    Sort sort = getOrders(dateSort, sumSort);
+    if (cashFilters.isAllRows()) {
+      if (sort != null) {
+        pageable = new PageRequest(0, Integer.MAX_VALUE, sort);
+      } else {
+        pageable = new PageRequest(0, Integer.MAX_VALUE);
+      }
+    } else {
+      if (sort != null) {
+        pageable = new PageRequest(cashFilters.getPageNumber(), cashFilters.getPageSize(), sort);
+      } else {
+        pageable = new PageRequest(cashFilters.getPageNumber(), cashFilters.getPageSize());
+      }
+    }
+    return pageable;
+  }
+
+  private Sort getOrders(Sort dateSort, Sort sumSort) {
+    Sort sort = null;
+    if (dateSort != null && sumSort != null) {
+      sort = dateSort.and(sumSort);
+    } else if (dateSort != null) {
+      sort = dateSort;
+    } else if (sumSort != null) {
+      sort = sumSort;
+    }
+    return sort;
+  }
+
+  private Sort getSumOrder(CashFilter cashFilters) {
+    Sort sumSort = null;
+    if (cashFilters.getSumOrder() != null) {
+      if (cashFilters.getSumOrder().equalsIgnoreCase("asc")) {
+        sumSort = new Sort(Sort.Direction.ASC, "givenCash");
+      } else {
+        sumSort = new Sort(Sort.Direction.DESC, "givenCash");
+      }
+    }
+    return sumSort;
+  }
+
+  private Sort getDateOrder(CashFilter cashFilters) {
+    Sort dateSort = null;
+    if (cashFilters.getDateOrder() != null) {
+      if (cashFilters.getDateOrder().equalsIgnoreCase("asc")) {
+        dateSort = new Sort(Sort.Direction.ASC, "dateGiven");
+      } else {
+        dateSort = new Sort(Sort.Direction.DESC, "dateGiven");
+      }
+    }
+    return dateSort;
+  }
+
+  private ModelAndView prepareModel(CashFilter cashFilters) {
     ModelAndView modelAndView = new ModelAndView("money-list");
+    Pageable pageable = getPageable(cashFilters);
     Page<Money> page = moneyService.findAll(cashFilters, pageable);
     modelAndView.addObject("page", page);
     modelAndView.addObject("cashFilters", cashFilters);

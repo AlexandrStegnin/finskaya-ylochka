@@ -18,7 +18,8 @@ public class CashFilter extends AbstractFilter {
     private AppUser investor;
     private List<Facility> facilities;
     private List<UnderFacility> underFacilities;
-    private boolean fromApi;
     private int filtered = 0;
     private boolean accepted = true;
+    private String dateOrder;
+    private String sumOrder;
 }

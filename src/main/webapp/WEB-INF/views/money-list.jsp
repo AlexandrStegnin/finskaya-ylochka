@@ -45,7 +45,6 @@
             <input type="hidden" id="pageSize" name="pageSize" value="${cashFilters.pageSize}">
             <input type="hidden" id="total" name="total" value="${page.content.size()}">
             <input type="hidden" id="filtered" name="filtered" value="${cashFilters.filtered}">
-            <input type="hidden" id="accepted" name="accepted" value="${cashFilters.accepted}">
             <div style="padding: 5px">
                 <form:select path="facilities" id="fFacilities" multiple="true" class="selectpicker"
                              data-live-search="true" title="Выберите объект..."
@@ -98,12 +97,13 @@
             <label for="endPeriod" style="margin-left:5px; margin-right:5px; font-size:14px">по:</label>
             <input id="endPeriod" name="toDate" type="date" class="form-control input-sm" value=""
                    style="margin-right:5px">
-                <%--                <input type="checkbox" checked data-toggle="toggle"--%>
-                <%--                       data-on="Все" data-off="Из 1С" data-onstyle="success" data-offstyle="danger"--%>
-                <%--                       data-size="input-sm">--%>
-            <form:select path="fromApi" class="selectpicker" data-width="130px">
-                <form:option value="true" label="Из 1С"/>
-                <form:option value="false" label="Остальные"/>
+            <form:select path="dateOrder" class="selectpicker" data-width="130px">
+                <form:option value="desc" label="Сначала новые даты"/>
+                <form:option value="asc" label="Сначала старые даты"/>
+            </form:select>
+            <form:select path="sumOrder" class="selectpicker" data-width="130px">
+                <form:option value="desc" label="Сначала большие суммы"/>
+                <form:option value="asc" label="Сначала маленькие суммы"/>
             </form:select>
             <input id="all" name="allRows" type="checkbox"
             <c:if test="${cashFilters.allRows == true}"> checked="checked" </c:if> data-toggle="toggle"
@@ -151,12 +151,6 @@
                                 суммы</a>
                         </div>
                     </div>
-                </div>
-                <div class="p-2">
-                    <input id="not-accepted" name="not-accepted" type="checkbox"
-                    <c:if test="${cashFilters.accepted == true}"> checked="checked" </c:if> data-toggle="toggle"
-                           data-on="Все суммы" data-off="Не согласованные" data-onstyle="success" data-offstyle="danger"
-                           data-size="input-sm">
                 </div>
             </sec:authorize>
         </sec:authorize>

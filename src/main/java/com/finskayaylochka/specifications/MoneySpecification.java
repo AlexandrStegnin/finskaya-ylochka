@@ -1,7 +1,13 @@
 package com.finskayaylochka.specifications;
 
-import com.finskayaylochka.model.supporting.enums.MoneyState;
-import com.finskayaylochka.model.*;
+import com.finskayaylochka.model.AppUser;
+import com.finskayaylochka.model.AppUser_;
+import com.finskayaylochka.model.Facility;
+import com.finskayaylochka.model.Facility_;
+import com.finskayaylochka.model.Money;
+import com.finskayaylochka.model.Money_;
+import com.finskayaylochka.model.UnderFacility;
+import com.finskayaylochka.model.UnderFacility_;
 import com.finskayaylochka.model.supporting.filters.CashFilter;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
@@ -25,8 +31,6 @@ public class MoneySpecification extends BaseSpecification<Money, CashFilter> {
                 .and(underFacilityIn(filter.getUnderFacilities()))
                 .and(loginIn(filter.getInvestors()))
                 .and(facilityIsNotNull())
-                .and(is1C(filter.isFromApi()))
-                .and(accepted(filter.isAccepted()))
                 .toPredicate(root, query, cb);
     }
 
@@ -124,27 +128,12 @@ public class MoneySpecification extends BaseSpecification<Money, CashFilter> {
         );
     }
 
-    private static Specification<Money> notResale(final Long typeClosingId) {
-        return (root, criteriaQuery, criteriaBuilder) ->
-                criteriaBuilder.notEqual(root
-                        .get(Money_.typeClosing)
-                        .get(TypeClosing_.id), typeClosingId);
-    }
-
-    public Specification<Money> getInvestedMoney(final Long typeClosingId) {
-        return (root, query, cb) -> where(
-                facilityIsNotNull())
-                .and(notClosing())
-                .or(notResale(typeClosingId))
-                .toPredicate(root, query.orderBy(cb.asc(root.get(Money_.dateGiven))), cb);
-    }
-
     private static Specification<Money> facilityIn(List<Facility> facilities) {
         return ((root, criteriaQuery, criteriaBuilder) -> {
             if (null == facilities) {
                 return null;
             }
-            if (facilities.size() == 0) {
+            if (facilities.isEmpty()) {
                 return null;
             }
             Facility undefinedFacility = facilities.stream()
@@ -161,12 +150,12 @@ public class MoneySpecification extends BaseSpecification<Money, CashFilter> {
 
     private static Specification<Money> underFacilityIn(List<UnderFacility> underFacilities) {
         return ((root, criteriaQuery, criteriaBuilder) -> {
-            if (null == underFacilities) {
+            if (underFacilities == null) {
                 return null;
             }
-            if (underFacilities.size() == 0) {
+            if (underFacilities.isEmpty()) {
                 return null;
-            } else if (null == underFacilities.get(0)) {
+            } else if (underFacilities.get(0) == null) {
                 return null;
             }
             UnderFacility undefinedUnderFacility = underFacilities.stream()
@@ -183,27 +172,6 @@ public class MoneySpecification extends BaseSpecification<Money, CashFilter> {
                 }
             }
             return root.get(Money_.underFacility).in(underFacilities);
-        }
-        );
-    }
-
-    private static Specification<Money> is1C(boolean is1C) {
-        return ((root, criteriaQuery, criteriaBuilder) -> {
-            if (!is1C) {
-                return null;
-            }
-            return root.get(Money_.transactionUUID).isNotNull();
-        }
-        );
-    }
-
-    private static Specification<Money> accepted(boolean accepted) {
-        return ((root, criteriaQuery, criteriaBuilder) -> {
-            if (accepted) {
-                return null;
-            }
-            return criteriaBuilder.equal(root
-                    .get(Money_.state), MoneyState.MATCHING);
         }
         );
     }
