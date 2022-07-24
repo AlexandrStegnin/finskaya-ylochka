@@ -34,6 +34,14 @@ public class AccountTransactionDTO {
 
   private boolean blocked;
 
+  Date dateReinvest;
+
+  Date dateSale;
+
+  Date parentDateSale;
+
+  Date finalDateSale;
+
   public AccountTransactionDTO(AccountTransaction transaction) {
     this.id = transaction.getId();
     this.txDate = transaction.getTxDate();
@@ -44,6 +52,10 @@ public class AccountTransactionDTO {
     this.cashType = transaction.getCashType().getTitle();
     this.cash = transaction.getCash();
     this.blocked = transaction.isBlocked();
+    this.dateReinvest = transaction.getDateReinvest();
+    this.dateSale = transaction.getDateSale();
+    this.parentDateSale = transaction.getParentDateSale();
+    this.finalDateSale = transaction.getFinalDateSale();
   }
 
   private String getName(Account account) {

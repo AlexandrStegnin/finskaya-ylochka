@@ -388,9 +388,17 @@ public class UploadExcelService {
     transaction.setCashType(CashType.SALE_CASH);
     transaction.setCash(salePayment.getProfitToReInvest());
     transaction.setParent(parent);
+    transaction.setParentDateSale(parent.getDateSale());
+    updateFinalDateSaleIfNeeded(transaction);
     accountTransactionService.create(transaction);
     salePayment.setAccTxId(transaction.getId());
     return transaction;
+  }
+
+  private void updateFinalDateSaleIfNeeded(AccountTransaction transaction) {
+    if (transaction.getDateReinvest() == null && transaction.getDateSale() == null && transaction.getParentDateSale() == null) {
+      transaction.setFinalDateSale(new Date());
+    }
   }
 
   /**
